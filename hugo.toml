@@ -1,4 +1,11 @@
-baseURL = 'https://example.org/'
-languageCode = 'en-us'
-title = 'My New Hugo Project'
-theme = 'PaperMod' 
+baseURL = "https://LMQ134.github.io"
+languageCode = "zh-cn"
+title = "我的博客"
+theme = "Stack"
+
+[params]
+  mainSections = ["posts"]
+
+[params.sidebar]
+  emoji = "🍥"
+  subtitle = "欢迎来到我的博客"
