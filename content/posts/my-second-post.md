@@ -1,56 +1,11 @@
-+++
-
-title = "我的第二篇文章"
-
+﻿+++
+title = "hello world"
 date = 2024-01-02T00:00:00+00:00
-
 draft = false
-
-description = "这是文章的简介，会显示在卡片上"
-
+description = "my first post"
 image = "https://picsum.photos/800/400"
-
-categories = \["生活"]
-
-tags = \["日记", "随笔"]
-
 +++
 
+## hello
 
-
-\## 你好世界
-
-
-
-这是我的第二篇博客文章，今天来聊聊我的日常。
-
-
-
-\## 今天做了什么
-
-
-
-在这里写你想写的任何内容，支持中文，随便写！
-
-
-
-\## 总结
-
-
-
-博客真好玩！
-
-```
-
-
-
-保存后重新推送：
-
-```
-
-git add .
-
-git commit -m "fix second post"
-
-git push
-
+this is my blog.
