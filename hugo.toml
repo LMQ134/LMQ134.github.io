@@ -9,3 +9,19 @@ theme = "Stack"
 [params.sidebar]
   emoji = "🍥"
   subtitle = "欢迎来到我的博客"
+
+[params.comments]
+  enabled = true
+  provider = "giscus"
+
+[params.comments.giscus]
+  repo = "LMQ134/LMQ134.github.io"
+  repoID = "R_kgDORm74tg"
+  category = "Announcements"
+  categoryID = "DIC_kwDORm74ts4C4YVe"
+  mapping = "pathname"
+  reactionsEnabled = 1
+  emitMetadata = 0
+  inputPosition = "bottom"
+  lang = "zh-CN"
+
