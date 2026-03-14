@@ -8,7 +8,7 @@ draft = false
 
 description = "这是文章的简介，会显示在卡片上"
 
-image = "https://picsum.photos/800/400?random=1"
+image = "https://picsum.photos/800/400"
 
 categories = \["生活"]
 
@@ -39,4 +39,18 @@ tags = \["日记", "随笔"]
 
 
 博客真好玩！
+
+```
+
+
+
+保存后重新推送：
+
+```
+
+git add .
+
+git commit -m "fix second post"
+
+git push
 
