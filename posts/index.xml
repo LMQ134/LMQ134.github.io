@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on 我的博客</title><link>https://LMQ134.github.io/posts/</link><description>Recent content in Posts on 我的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Tue, 02 Jan 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://LMQ134.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>hello world</title><link>https://LMQ134.github.io/posts/my-second-post/</link><pubDate>Tue, 02 Jan 2024 00:00:00 +0000</pubDate><guid>https://LMQ134.github.io/posts/my-second-post/</guid><description>&lt;img src="https://LMQ134.github.io/" alt="Featured image of post hello world" /&gt;&lt;h2 id="hello"&gt;hello
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on 我的博客</title><link>https://LMQ134.github.io/posts/</link><description>Recent content in Posts on 我的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 15 Mar 2026 00:00:00 +0800</lastBuildDate><atom:link href="https://LMQ134.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>文章标题</title><link>https://LMQ134.github.io/posts/post2/</link><pubDate>Sun, 15 Mar 2026 00:00:00 +0800</pubDate><guid>https://LMQ134.github.io/posts/post2/</guid><description>&lt;p&gt;正文，内容11232131231&lt;/p&gt;</description></item><item><title>hello world</title><link>https://LMQ134.github.io/posts/my-second-post/</link><pubDate>Tue, 02 Jan 2024 00:00:00 +0000</pubDate><guid>https://LMQ134.github.io/posts/my-second-post/</guid><description>&lt;img src="https://LMQ134.github.io/" alt="Featured image of post hello world" /&gt;&lt;h2 id="hello"&gt;hello
 &lt;/h2&gt;&lt;p&gt;this is my blog.&lt;/p&gt;</description></item><item><title>Hello</title><link>https://LMQ134.github.io/posts/hello/</link><pubDate>Mon, 01 Jan 2024 00:00:00 +0000</pubDate><guid>https://LMQ134.github.io/posts/hello/</guid><description>&lt;pre tabindex="0"&gt;&lt;code&gt;
 
 
@@ -7,10 +7,4 @@
 1\. 把 `draft = true` 改成 `draft = false`
 
 2\. 在最后的 `+++` 下面写你的文章内容，中文完全没问题，比如：
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;+++&lt;/p&gt;
-&lt;p&gt;title = &amp;lsquo;Hello&amp;rsquo;&lt;/p&gt;
-&lt;p&gt;date = 2024-01-01T00:00:00+00:00&lt;/p&gt;
-&lt;p&gt;draft = false&lt;/p&gt;
-&lt;p&gt;+++&lt;/p&gt;
-&lt;p&gt;## 我的第一篇博客&lt;/p&gt;
-&lt;p&gt;你好世界！这是我的第一篇文章，内容可以随便写中文。&lt;/p&gt;</description></item></channel></rss>
+&lt;/code&gt;&lt;/pre&gt;</description></item></channel></rss>
