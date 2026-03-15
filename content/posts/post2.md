@@ -5,4 +5,4 @@ draft = false
 description = 兰州大学微电子专业大二专业课"
 +++
 
-测试
+测试，发的方法案发当时
