@@ -1,35 +1,31 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>我的博客</title><link>https://LMQ134.github.io/</link><description>Recent content on 我的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 15 Mar 2026 00:00:00 +0800</lastBuildDate><atom:link href="https://LMQ134.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>兰州大学微电子专业学习分享</title><link>https://LMQ134.github.io/posts/post2/</link><pubDate>Sun, 15 Mar 2026 00:00:00 +0800</pubDate><guid>https://LMQ134.github.io/posts/post2/</guid><description>&lt;p&gt;本文主要是从大二开始记载笔者在西北某末流985微电子专业的学习情况，供自己以后参考，或者其他同学借鉴，也欢迎大家提出一些改进的建议&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>我的博客</title><link>https://LMQ134.github.io/</link><description>Recent content on 我的博客</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sun, 15 Mar 2026 00:00:00 +0800</lastBuildDate><atom:link href="https://LMQ134.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>兰州大学微电子专业学习分享</title><link>https://LMQ134.github.io/posts/post2/</link><pubDate>Sun, 15 Mar 2026 00:00:00 +0800</pubDate><guid>https://LMQ134.github.io/posts/post2/</guid><description>&lt;p&gt;&lt;strong&gt;本文主要是从大二开始记载笔者在西北某末流985微电子专业的学习情况，供自己以后参考，或者其他同学借鉴，也欢迎大家提出一些改进的建议&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;这里把成绩给删了，我发现看的人比较多，怕被盒了，本来我成绩也就一般😂啥建议的我可能也说的不对，要批判的看一下&lt;/p&gt;
 &lt;p&gt;更新一下关于成绩的说明&lt;/p&gt;
-&lt;p&gt;大二上
-我在大二上修了5门专业课，3门是院内的，2门是自己提前选别的院的&lt;/p&gt;
-&lt;p&gt;电路分析
-这门课比较简单，一开始讲电路分析的几个方法，节点法，回路法，这两个比较重要，再就是那个戴维南和诺顿定理，最重要，接着讲正弦稳态，就是电源不再是直流变成交流了，记电感和电容那两个公式就行。同样也是解电路，一阶电路和二阶电路，对应的就是一阶微分方程和二阶微分方程，这两个考试的话就得背两个公式了，现推比较浪费时间，因为要解二阶非齐次微分方程。最后就是三相电，还有传递函数，计算的话都比较简单。但可能传递函数在学电路的时候不太理解他是干嘛的，等学了模电就会慢慢理解了&lt;/p&gt;
+&lt;h1 id="大二上"&gt;大二上
+&lt;/h1&gt;&lt;p&gt;我在大二上修了5门专业课，3门是院内的，2门是自己提前选别的院的&lt;/p&gt;
+&lt;h2 id="电路分析"&gt;电路分析
+&lt;/h2&gt;&lt;p&gt;这门课比较简单，一开始讲电路分析的几个方法，节点法，回路法，这两个比较重要，再就是那个戴维南和诺顿定理，最重要，接着讲正弦稳态，就是电源不再是直流变成交流了，记电感和电容那两个公式就行。同样也是解电路，一阶电路和二阶电路，对应的就是一阶微分方程和二阶微分方程，这两个考试的话就得背两个公式了，现推比较浪费时间，因为要解二阶非齐次微分方程。最后就是三相电，还有传递函数，计算的话都比较简单。但可能传递函数在学电路的时候不太理解他是干嘛的，等学了模电就会慢慢理解了&lt;/p&gt;
 &lt;p&gt;关于成绩：没有期中，平时上课每节课会用学习通签到，这个平时分绝大部分是由签到决定的，所以不要旷课！作业改的挺松的都90+，但是占平时成绩非常小部分。&lt;/p&gt;
-&lt;p&gt;数学物理方法
-这门课期末考的比较简单，容易拿高分。感觉平时没学到啥，最后是期末看网课搞懂的，主要就是复变函数部分和数理方程部分，复变函数部分我推荐看这个up主的【复变函数(速成版)&amp;mdash;复数及其运算】&lt;/p&gt;
+&lt;h2 id="数学物理方法"&gt;数学物理方法
+&lt;/h2&gt;&lt;p&gt;这门课期末考的比较简单，容易拿高分。感觉平时没学到啥，最后是期末看网课搞懂的，主要就是复变函数部分和数理方程部分，复变函数部分我推荐看这个up主的【复变函数(速成版)&amp;mdash;复数及其运算】&lt;/p&gt;
 &lt;p&gt;&lt;a class="link" href="https://www.bilibili.com/video/BV19M4y1L7hd?vd_source=e20bfbc094d14aacadb7d8eb7f4939de" target="_blank" rel="noopener"
  &gt;https://www.bilibili.com/video/BV19M4y1L7hd?vd_source=e20bfbc094d14aacadb7d8eb7f4939de&lt;/a&gt;
-&lt;a class="link" href="https://www.bilibili.com/video/BV19M4y1L7hd?vd_source=e20bfbc094d14aacadb7d8eb7f4939de" target="_blank" rel="noopener"
- &gt;www.bilibili.com/video/BV19M4y1L7hd?vd_source=e20bfbc094d14aacadb7d8eb7f4939de&lt;/a&gt;
 把他的看完+看书应该就没什么问题了，&lt;/p&gt;
-&lt;p&gt;数理方程就可以看那个 上大老姜 的，应该没有比他更精简的了，其实数理方程部分有的我还是没搞懂，因为是期末速成的+背大题。先是分离变量法，这个我懂，再就是拉普拉斯方程在柱坐标和球坐标下的解，这个有的我没弄清楚是咋解的，确实是没时间看了&lt;/p&gt;
+&lt;p&gt;数理方程就可以看那个 &lt;strong&gt;上大老姜&lt;/strong&gt; 的，应该没有比他更精简的了，其实数理方程部分有的我还是没搞懂，因为是期末速成的+背大题。先是分离变量法，这个我懂，再就是拉普拉斯方程在柱坐标和球坐标下的解，这个有的我没弄清楚是咋解的，确实是没时间看了&lt;/p&gt;
 &lt;p&gt;这里建议大家看看梁昆水的那本，兰大的那本我不太喜欢&lt;/p&gt;
 &lt;p&gt;再编：这门课里面得一些东西都挺有用的，对后续的物理课程都有直接的作用，比如连带勒让德方程在量子力学中，傅里叶变换在信号与系统中都很重要，建议这门课还是第一遍就学好点，免得以后用到的时候还要再重头学。&lt;/p&gt;
 &lt;p&gt;关于成绩：听说这门课换老师了，可能规则也变了&lt;/p&gt;
-&lt;p&gt;量子力学
-这门课确实是没学懂，用的钱伯初，这本书硬是没看懂，搞不清楚他是怎么推导的，也不懂公式的含义，先是看了格里菲斯的，再就是朗道的那本，勉强看懂了一点，然后就是因为这学期学的课确实太多了，没时间看别的网课了，然后量子力学估计学了个半吊子。&lt;/p&gt;
+&lt;h2 id="量子力学"&gt;量子力学
+&lt;/h2&gt;&lt;p&gt;这门课确实是没学懂，用的钱伯初，这本书硬是没看懂，搞不清楚他是怎么推导的，也不懂公式的含义，先是看了格里菲斯的，再就是朗道的那本，勉强看懂了一点，然后就是因为这学期学的课确实太多了，没时间看别的网课了，然后量子力学估计学了个半吊子。&lt;/p&gt;
 &lt;p&gt;不知道是不是思维转换上的问题，老师说量子力学你要先接接受他的这个公式和观念，再想着证明啥的。听之后我感觉学习起来就稍微轻松了一些了&lt;/p&gt;
 &lt;p&gt;再编：建议大家看兰兰的不自量力+格里菲斯，不太建议看justchan。多注意理解，不要死记硬背&lt;/p&gt;
 &lt;p&gt;【【兰兰的不自量力】量子力学考研教学视频01：学习经验分享、波函数与薛定谔方程、归一化】&lt;/p&gt;
 &lt;p&gt;&lt;a class="link" href="https://www.bilibili.com/video/BV1uV41167vv?vd_source=e20bfbc094d14aacadb7d8eb7f4939de" target="_blank" rel="noopener"
- &gt;https://www.bilibili.com/video/BV1uV41167vv?vd_source=e20bfbc094d14aacadb7d8eb7f4939de&lt;/a&gt;
-&lt;a class="link" href="https://www.bilibili.com/video/BV1uV41167vv?vd_source=e20bfbc094d14aacadb7d8eb7f4939de" target="_blank" rel="noopener"
- &gt;www.bilibili.com/video/BV1uV41167vv?vd_source=e20bfbc094d14aacadb7d8eb7f4939de&lt;/a&gt;
-在后续的课程，固体物理，半导体物理里面，量子力学始终贯穿其中，是决定了你能否学好的关键，量子力学里面的氢原子、自旋、角动量，都非常的重要，你这个不学好的话，以后固体物理半导体物理你会学的很痛苦，我当时就是固体物理学的非常痛苦！！！基础一定要打好，没学明白就假期赶快补，这是肺腑之言&lt;/p&gt;
+ &gt;https://www.bilibili.com/video/BV1uV41167vv?vd_source=e20bfbc094d14aacadb7d8eb7f4939de&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;在后续的课程，固体物理，半导体物理里面，量子力学始终贯穿其中，是决定了你能否学好的关键，量子力学里面的氢原子、自旋、角动量，都非常的重要，你这个不学好的话，以后固体物理半导体物理你会学的很痛苦，我当时就是固体物理学的非常痛苦！！！基础一定要打好，没学明白就假期赶快补，这是肺腑之言&lt;/p&gt;
 &lt;p&gt;关于成绩：同样，不要旷课，不要旷课，不要旷课！！！旷课扣的平时分是真的痛，作业要按时交&lt;/p&gt;
-&lt;p&gt;信号与系统
-这门课成绩还没出，考的不算难。考试考了个5G的多路复用的原理，那一节我没看，5分估计没了。我跟着信息院上的，其实这门课我感觉就是傅里叶变换，拉氏变换，Z变换，我就是只会算，会做题，但是我也不清楚这几个变换到底在干什么，为啥要把时域信号变换到频域信号，没搞懂。其实就是不懂他这个和电路有什么关系？不知道怎么应用&lt;/p&gt;</description></item><item><title>hello world</title><link>https://LMQ134.github.io/posts/my-second-post/</link><pubDate>Tue, 02 Jan 2024 00:00:00 +0000</pubDate><guid>https://LMQ134.github.io/posts/my-second-post/</guid><description>&lt;img src="https://LMQ134.github.io/" alt="Featured image of post hello world" /&gt;&lt;h2 id="hello"&gt;hello
+&lt;h2 id="信号与系统"&gt;信号与系统
+&lt;/h2&gt;&lt;p&gt;这门课成绩还没出，考的不算难。考试考了个5G的多路复用的原理，那一节我没看，5分估计没了。我跟着信息院上的，其实这门课我感觉就是傅里叶变换，拉氏变换，Z变换，我就是只会算，会做题，但是我也不清楚这几个变换到底在干什么，为啥要把时域信号变换到频域信号，没搞懂。其实就是不懂他这个和电路有什么关系？不知道怎么应用&lt;/p&gt;</description></item><item><title>hello world</title><link>https://LMQ134.github.io/posts/my-second-post/</link><pubDate>Tue, 02 Jan 2024 00:00:00 +0000</pubDate><guid>https://LMQ134.github.io/posts/my-second-post/</guid><description>&lt;img src="https://LMQ134.github.io/" alt="Featured image of post hello world" /&gt;&lt;h2 id="hello"&gt;hello
 &lt;/h2&gt;&lt;p&gt;this is my blog.&lt;/p&gt;</description></item><item><title>Hello</title><link>https://LMQ134.github.io/posts/hello/</link><pubDate>Mon, 01 Jan 2024 00:00:00 +0000</pubDate><guid>https://LMQ134.github.io/posts/hello/</guid><description>&lt;pre tabindex="0"&gt;&lt;code&gt;
 
 
