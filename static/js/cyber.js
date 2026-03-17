@@ -1,17 +1,26 @@
 (function () {
+  // 粒子画布
   const canvas = document.createElement('canvas');
   canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
   document.body.appendChild(canvas);
   const ctx = canvas.getContext('2d');
 
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  window.addEventListener('resize', () => {
+  // 背景网格画布
+  const bgCanvas = document.createElement('canvas');
+  bgCanvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;';
+  document.body.appendChild(bgCanvas);
+  const bgCtx = bgCanvas.getContext('2d');
+
+  function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-  });
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
-  let mouse = { x: 0, y: 0 };
+  let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   let particles = [];
 
   window.addEventListener('mousemove', e => {
@@ -61,10 +70,71 @@
     ctx.restore();
   };
 
+  // 背景网格
+  let time = 0;
+  function drawGrid() {
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    const spacing = 40;
+    const cols = Math.ceil(bgCanvas.width / spacing) + 1;
+    const rows = Math.ceil(bgCanvas.height / spacing) + 1;
+
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        const x = i * spacing;
+        const y = j * spacing;
+
+        // 计算离鼠标的距离
+        const dx = x - mouse.x;
+        const dy = y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const maxDist = 200;
+        const influence = Math.max(0, 1 - dist / maxDist);
+
+        // 波动偏移
+        const offsetX = Math.sin(time * 0.02 + i * 0.5) * 3 * influence;
+        const offsetY = Math.cos(time * 0.02 + j * 0.5) * 3 * influence;
+
+        const px = x + offsetX;
+        const py = y + offsetY;
+
+        // 颜色根据鼠标距离变化
+        const alpha = 0.08 + influence * 0.25;
+        const r = Math.floor(0 + influence * 123);
+        const g = Math.floor(200 + influence * 55);
+        const b = Math.floor(247 - influence * 50);
+
+        bgCtx.beginPath();
+        bgCtx.arc(px, py, 1 + influence * 2, 0, Math.PI * 2);
+        bgCtx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+        bgCtx.fill();
+      }
+    }
+
+    // 连线
+    bgCtx.strokeStyle = 'rgba(0, 220, 255, 0.06)';
+    bgCtx.lineWidth = 0.5;
+    for (let i = 0; i < cols - 1; i++) {
+      for (let j = 0; j < rows - 1; j++) {
+        const x = i * spacing;
+        const y = j * spacing;
+        bgCtx.beginPath();
+        bgCtx.moveTo(x, y);
+        bgCtx.lineTo(x + spacing, y);
+        bgCtx.stroke();
+        bgCtx.beginPath();
+        bgCtx.moveTo(x, y);
+        bgCtx.lineTo(x, y + spacing);
+        bgCtx.stroke();
+      }
+    }
+  }
+
   function animate() {
+    time++;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles = particles.filter(p => p.life > 0);
     particles.forEach(p => { p.update(); p.draw(); });
+    drawGrid();
     requestAnimationFrame(animate);
   }
 
