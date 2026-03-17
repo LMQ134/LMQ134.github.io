@@ -135,8 +135,48 @@
     particles = particles.filter(p => p.life > 0);
     particles.forEach(p => { p.update(); p.draw(); });
     drawGrid();
+// 随机生成流星
+    if (Math.random() < 0.08) meteors.push(new Meteor());
+    meteors = meteors.filter(m => !m.isDead());
+    meteors.forEach(m => { m.update(); m.draw(); });
+
     requestAnimationFrame(animate);
   }
 
   animate();
 })();
+
+// 流星雨
+  let meteors = [];
+
+  function Meteor() {
+    this.x = Math.random() * bgCanvas.width * 2;
+    this.y = -20;
+    this.length = Math.random() * 150 + 50;
+    this.speed = Math.random() * 8 + 4;
+    this.opacity = Math.random() * 0.8 + 0.2;
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  Meteor.prototype.update = function () {
+    this.x -= this.speed * 0.5;
+    this.y += this.speed;
+  };
+
+  Meteor.prototype.draw = function () {
+    bgCtx.save();
+    bgCtx.globalAlpha = this.opacity;
+    bgCtx.strokeStyle = this.color;
+    bgCtx.lineWidth = 1.5;
+    bgCtx.shadowBlur = 8;
+    bgCtx.shadowColor = this.color;
+    bgCtx.beginPath();
+    bgCtx.moveTo(this.x, this.y);
+    bgCtx.lineTo(this.x + this.length * 0.5, this.y - this.length);
+    bgCtx.stroke();
+    bgCtx.restore();
+  };
+
+  Meteor.prototype.isDead = function () {
+    return this.y > bgCanvas.height + 100;
+  };
