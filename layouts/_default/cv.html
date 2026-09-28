@@ -13,10 +13,19 @@
 
         {{- /* 下载条放在模板里而不是 markdown 里：Hugo 不解析正文里的
                Go 模板（只认短代码），写进 .md 会原样输出 {{ ... }}。
-               而且放在这里 URL 能用 relURL 正确生成。 */}}
+               而且放在这里 URL 能用 relURL 正确生成。
+
+               文件大小和页数用 os.Stat 读出来，不写死——换个简历 PDF
+               之后，写死的那行数字就变成假的了。 */}}
+        {{- $kb := "" }}
+        {{- with os.Stat "static/cv.pdf" }}
+          {{- /* 先转浮点再取整：Hugo 的 div 对整数是截断的，
+                 263087/1024 = 256.9 会变成 256，而人期望看到 257。 */}}
+          {{- $kb = printf "%d KB" (math.Round (div (float .Size) 1024)) }}
+        {{- end }}
         <p class="cv-download">
-          <a href="{{ "cv.pdf" | relURL }}">下载 PDF 版</a>
-          <span>（一页，257 KB）</span>
+          <a href="{{ "cv.pdf" | relURL }}">Download PDF</a>
+          {{- with $kb }}<span>(one page, {{ . }})</span>{{ end }}
         </p>
 
         {{ .Content }}
