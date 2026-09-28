@@ -82,7 +82,7 @@ An anomaly must persist across three consecutive measurement windows (a saturati
 counter) before it is believed — environmental noise is continuous, and a sensor that
 cries wolf gets disabled by its own users.
 
-Response is graded. Thermal, voltage or frequency excursion raises an **NMI**. A clock
+Response is graded. Thermal, voltage, or frequency excursion raises an **NMI**. A clock
 glitch, a watchdog timeout, or a composite judgement across both probes triggers
 **WIPE** — hardware erasure of the key material, taken *before* the attack can
 succeed rather than reported after it. Both flags are **latched so that only a reset

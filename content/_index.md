@@ -1,5 +1,5 @@
 I am an undergraduate in **Microelectronics Science and Engineering** at
-[Lanzhou University](https://www.lzu.edu.cn/), in the School of Physics. My work is on
+[Lanzhou University](https://www.lzu.edu.cn/), in the School of Physics. I work on
 **computer architecture and digital integrated circuit design** — processors, hardware
 accelerators, and the FPGA implementations of both.
 
@@ -52,13 +52,13 @@ School of Physics · ranked in the top 30% of the major
   domains, in three layers (sense / decide / configure): a 51-stage ring-oscillator
   probe with self-calibrating, frozen baselines; a 16-stage LUT delay line and pulse
   width monitor for nanosecond glitches; and a watchdog, an arbiter, and an APB
-  register interface. Response bypasses the CPU entirely — NMI for thermal, voltage or
+  register interface. Response bypasses the CPU entirely — NMI for thermal, voltage, or
   frequency excursion, hardware key erasure for a confirmed glitch.
   **1382 LUT / 2006 FF / 0.223 W / 200 MHz.**
   [Details]({{< relref "/projects/security-sensor" >}}) ·
   [Code](https://github.com/LMQ134/fuweibei)
 
-- **2026 – — Real-time video style transfer on Zynq.** *(in progress)*
+- **2026 – present — Real-time video style transfer on Zynq.** *(in progress)*
   A camera-to-display pipeline on a Zynq-7020, with the style stage being moved from a
   lookup-table filter to a small convolutional network in the programmable logic. The
   binding constraint is the resource budget: a 640×480 frame does not fit in the
@@ -69,12 +69,17 @@ School of Physics · ranked in the top 30% of the major
 ## Skills
 
 <div class="cv-entry"><span class="when">Languages</span><span>
-Verilog · C · Python
+Verilog · C · Python · Tcl
 </span></div>
 
 <div class="cv-entry"><span class="when">Hardware</span><span>
-FPGA development · Xilinx Vivado (synthesis, timing closure, ILA debug) ·
+FPGA development · Xilinx Vivado (synthesis, implementation, timing closure, ILA debug) ·
 clock-domain-crossing design · APB
+</span></div>
+
+<div class="cv-entry"><span class="when">Flow</span><span>
+Scripted EDA flows in Tcl and Python — project setup, implementation and bitstream
+generation, timing-report parsing, HDL linting · Git · Make
 </span></div>
 
 ---
