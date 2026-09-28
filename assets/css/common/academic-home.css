@@ -18,11 +18,16 @@ body {
 
 /* ---------- 顶栏 ---------- */
 
+/* 用 sticky 而不是 fixed。
+ *
+ * fixed 会让顶栏脱离文档流，正文必须靠一个 padding-top 来让位——
+ * 而那个值只能按桌面估。手机上品牌名折行、菜单再占一行，顶栏能长到
+ * 两百多像素，估出来的值根本不够，第一屏的内容就被压在底下了。
+ *
+ * sticky 的顶栏仍然占文档流的空间，多高都不会盖住东西。 */
 .acad-nav {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
     z-index: 100;
     background: #f8f9fa;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -88,10 +93,8 @@ body {
     border-bottom-color: #76aad9;
 }
 
-/* 顶栏是 fixed 的，正文得让开。 */
-.main {
-    padding-top: 5.5rem;
-}
+/* 顶栏是 sticky 的，占文档流空间，正文不需要额外让位。
+   （原来是 fixed + padding-top 估高度，手机上估不准，已改掉。） */
 
 /* ---------- 两栏 ---------- */
 
@@ -130,7 +133,7 @@ body.home .main,
 .sidebar-col {
     flex: 0 0 220px;
     position: sticky;
-    top: 5.5rem;          /* 顶栏高度撑住，滚动时不钻到栏底下 */
+    top: 4.5rem;          /* 顶栏是 sticky 的，名片要停在它下面而不是钻进去 */
 }
 
 .main-col {
@@ -334,10 +337,22 @@ body.home .main,
     }
 
     .acad-nav-inner {
-        padding: 0.6rem 1rem;
+        padding: 0.55rem 1rem;
+        gap: 0.5rem 1rem;
     }
 
-    .main {
-        padding-top: 6.5rem;   /* 顶栏在窄屏会折行变高 */
+    /* 手机屏上顶栏能占掉小半个屏幕，把品牌名压紧一点：
+       姓名和头衔各降一档，行距收紧。 */
+    .acad-brand-name {
+        font-size: 0.95rem;
+    }
+
+    .acad-brand-title {
+        font-size: 0.72rem;
+    }
+
+    .acad-menu {
+        font-size: 0.9rem;
+        gap: 1.1rem;
     }
 }
