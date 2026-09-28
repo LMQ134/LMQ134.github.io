@@ -20,8 +20,10 @@
         {{- $kb := "" }}
         {{- with os.Stat "static/cv.pdf" }}
           {{- /* 先转浮点再取整：Hugo 的 div 对整数是截断的，
-                 263087/1024 = 256.9 会变成 256，而人期望看到 257。 */}}
-          {{- $kb = printf "%d KB" (math.Round (div (float .Size) 1024)) }}
+                 263087/1024 = 256.9 会变成 256，而人期望看到 257。
+                 最后要 int 一下——Go 的 %d 不接受 float64，
+                 直接喂 math.Round 的结果会打印出 %!d(float64=257)。 */}}
+          {{- $kb = printf "%d KB" (int (math.Round (div (float .Size) 1024))) }}
         {{- end }}
         <p class="cv-download">
           <a href="{{ "cv.pdf" | relURL }}">Download PDF</a>
