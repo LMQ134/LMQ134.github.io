@@ -1,0 +1,20 @@
+{{- define "main" }}
+
+{{- /* 两栏学术主页：左栏名片（公共部件），右栏白卡片装自我介绍。
+       正文来自 content/_index.md，改文字不用动这个模板。 */ -}}
+
+<div class="acad-wrap">
+  <div class="two-col-layout">
+
+    {{- partial "acad-sidebar.html" . }}
+
+    <div class="main-col">
+      <div class="bio-card">
+        {{ .Content }}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{- end }}

@@ -1,0 +1,94 @@
+baseURL: "https://LMQ134.github.io/"
+title: Mingquan Li
+theme: PaperMod
+
+enableRobotsTXT: true
+pagination:
+  pagerSize: 20
+
+taxonomies:
+  tag: tags
+
+# 顶栏。顺序就是显示顺序，weight 小的靠左。
+# 用英文：这个站是给美国博士申请用的，招生委员会读的是英文。
+menu:
+  main:
+    # weight 从 1 开始，别用 0 —— Hugo 把 weight=0 当作"未设置"，
+    # 会把它排到所有设了 weight 的条目后面，Home 就跑到最右了。
+    - name: Home
+      url: /
+      weight: 1
+    - name: CV
+      url: cv/
+      weight: 2
+    - name: Projects
+      url: projects/
+      weight: 3
+    - name: Notes
+      url: posts/
+      weight: 4
+
+params:
+  description: "Mingquan Li — undergraduate in Microelectronics Science and Engineering at Lanzhou University. Computer architecture and digital IC design."
+  author: Mingquan Li
+  DateFormat: "2006-01-02"
+
+  # 顶栏姓名下面那行小字。改这里就改顶栏，不用动模板。
+  brandTitle: "Undergraduate · Microelectronics, Lanzhou University"
+
+  # 学术主页不需要博客那一套，逐条关掉。
+  # 这些都是从 pmichaillat/hugo-website 带过来的克制默认值，保持不动。
+  defaultTheme: light
+  disableThemeToggle: true
+  ShowShareButtons: false
+  ShowReadingTime: false
+  ShowBreadCrumbs: false
+  ShowPostNavLinks: false
+  ShowCodeCopyButtons: true
+  ShowWordCount: false
+  MainSections: [posts, projects]
+  ShowToc: false
+  disableScrollToTop: true
+  TocOpen: true
+  UseHugoToc: true
+  comments: false
+  math: true
+  disableAnchoredHeadings: true
+  disableSpecial1stPost: true
+  hideFooter: false
+
+  # 首页由 layouts/index.html 自己接管（两栏：左名片右介绍）。
+  # 所以这里不再配 profileMode —— 那个是 PaperMod 的居中名片布局，
+  # 现在没有代码路径会读它，留着只会让人以为改它有用。
+  # 自我介绍的内容在 content/_index.md。
+
+  # 头像下面那排图标。CV 指向 static/cv.pdf。
+  socialIcons:
+    - name: CV
+      url: cv.pdf
+    - name: Email
+      url: mailto:m18062762139@163.com
+    - name: GitHub
+      url: https://github.com/LMQ134
+
+  assets:
+    disableScrollBarStyle: true
+  cover:
+    hiddenInList: false
+    hiddenInSingle: true
+  label:
+    text: Mingquan Li
+    # 这里原本挂的是模板自带的 favicon.ico，在顶栏渲染成一个蓝色方块。
+    # 学术主页的顶栏通常就是名字，不放图标；favicon 仍然用于浏览器标签页。
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    guessSyntax: true
+    style: autumn
+  tableOfContents:
+    endLevel: 2
+    ordered: false
+    startLevel: 2

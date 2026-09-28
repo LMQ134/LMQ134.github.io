@@ -1,0 +1,343 @@
+/* 学术主页样式。
+ *
+ * 这套数值是照着 libingyao.github.io 那站的内联样式校准的：它是
+ * Bootstrap 的 navbar + 几个自定义类，布局本身很小，所以不值得为此
+ * 引入 Bootstrap —— 这里用 flex 把同样几个类实现一遍。
+ *
+ * 放在 css/common/ 下会被 PaperMod 的 head.html 自动 Match 进 bundle，
+ * 不用改模板。
+ */
+
+/* ---------- 页面底色 ---------- */
+
+/* 内容卡片是白的，底色要浅灰才分得出来。PaperMod 默认全白。 */
+body.list,
+body {
+    background: #f8f9fa;
+}
+
+/* ---------- 顶栏 ---------- */
+
+.acad-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: #f8f9fa;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.acad-nav-inner {
+    /* 和 body.home .main 同宽：顶栏的姓名和内容左边缘对齐，
+       菜单和卡片右边缘对齐，否则两者会差一截。 */
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0.7rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.acad-brand {
+    text-decoration: none;
+    color: var(--primary);
+    line-height: 1.25;
+    display: block;
+}
+
+.acad-brand-name {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.acad-brand-title {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #6c757d;
+}
+
+.acad-menu {
+    display: flex;
+    gap: 1.4rem;
+    font-size: 0.95rem;
+}
+
+.acad-menu a {
+    color: var(--primary);
+    text-decoration: none;
+    opacity: 0.75;
+    /* 下划线常驻但透明，切换当前页时只改颜色——
+       用 border 而不是 ::after 是为了不改变盒高，避免菜单跳一下 */
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.acad-menu a:hover {
+    opacity: 1;
+}
+
+.acad-menu a.active {
+    opacity: 1;
+    font-weight: 600;
+    border-bottom-color: #76aad9;
+}
+
+/* 顶栏是 fixed 的，正文得让开。 */
+.main {
+    padding-top: 5.5rem;
+}
+
+/* ---------- 两栏 ---------- */
+
+/* 用两栏布局的页面都放开宽度。
+ *
+ * PaperMod 把 .main 限死在 --main-width(720px) + 2*gap，而文章页用的是
+ * 同一个容器——那个 720 是为阅读舒适留的，两栏布局却需要横向空间。
+ *
+ * :has() 让这条规则自己找页面：只要正文里有 .two-col-layout 就生效，
+ * 以后再加带左栏的页面（比如 Publications）不用回来改这里。
+ * body.home 那一半是兼容回退，给不支持 :has() 的浏览器。
+ *
+ * 1140px 是 Bootstrap container-lg 在 xl 断点的宽度，也就是参考站用的值。 */
+body.home .main,
+.main:has(.two-col-layout) {
+    max-width: 1140px;
+}
+
+.acad-wrap {
+    /* .main 自带 24px 内边距，这里不再叠一层宽度限制 */
+    max-width: none;
+    margin: 0;
+    padding: 0;
+}
+
+.two-col-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.75rem;
+    margin-top: 1rem;
+}
+
+/* 左栏 220px 是参考站的取值；main-col 拿剩下的全部。
+   两栏合计 1092px，减去间距后正文约 844px，减去卡片内边距约 748px
+   —— 和参考站的实际正文宽度基本一致。 */
+.sidebar-col {
+    flex: 0 0 220px;
+    position: sticky;
+    top: 5.5rem;          /* 顶栏高度撑住，滚动时不钻到栏底下 */
+}
+
+.main-col {
+    flex: 1;
+    min-width: 0;         /* flex 子项默认 min-width:auto，长链接会撑破布局 */
+}
+
+/* ---------- 左栏名片 ---------- */
+
+.sidebar-card {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+    border-radius: 0.5rem;
+}
+
+/* 边缘一圈内阴影，让名片和底色之间有个柔和的过渡而不是硬边。 */
+.sidebar-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0.5rem;
+    box-shadow: inset 0 0 30px 10px #f8f9fa;
+    pointer-events: none;
+}
+
+.sidebar-card img.portrait {
+    width: 170px;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 50%;   /* 圆形 */
+    margin-bottom: 1rem;
+}
+
+.sidebar-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+}
+
+.sidebar-title {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+}
+
+.sidebar-icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.sidebar-icons a {
+    color: #76aad9;
+    text-decoration: none;
+    display: inline-block;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-icons a:hover {
+    color: #4a8ab5;
+    transform: scale(1.15);
+}
+
+.sidebar-icons svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+    fill: currentColor;
+}
+
+/* ---------- 右栏内容卡片 ---------- */
+
+.bio-card {
+    background: #fff;
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2rem 3rem;
+}
+
+.bio-card > :first-child {
+    margin-top: 0;
+}
+
+/* 段落间距要自己补。
+ *
+ * PaperMod 的 reset.css 把 h1-h6 和 p 的外边距全清零了，靠
+ * .post-content p 那条规则加回来——但右栏用的是 .bio-card，
+ * 吃不到那条，于是所有段落贴在一起。 */
+.bio-card p {
+    margin: 0 0 1.1em;
+    line-height: 1.7;
+}
+
+.bio-card ul,
+.bio-card ol {
+    margin: 0 0 1.1em;
+    padding-left: 1.4em;
+}
+
+.bio-card li {
+    margin-bottom: 0.45em;
+    line-height: 1.7;
+}
+
+.bio-card li:last-child {
+    margin-bottom: 0;
+}
+
+.bio-card h2 {
+    font-size: 1.15rem;
+    margin-top: 2rem;
+    margin-bottom: 0.6rem;
+}
+
+.bio-card p,
+.bio-card li {
+    line-height: 1.7;
+}
+
+/* 简历式的条目：左时间右内容。比表格轻，也比重重的一堆 <h3> 清爽。 */
+.bio-card .cv-entry {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.25rem 1rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.65;
+}
+
+.bio-card .cv-entry .when {
+    color: #6c757d;
+    font-size: 0.9rem;
+    padding-top: 0.1rem;
+}
+
+.bio-card hr {
+    margin: 2rem 0;
+    border: 0;
+    border-top: 1px solid #eaecef;
+}
+
+/* CV 页顶部的 PDF 下载条。
+   网页版是给招生官扫的，PDF 才是拿去存档 / 转发的那份，
+   所以两个都给，但把 PDF 降级成一条提示而不是主入口。 */
+.bio-card .cv-download {
+    background: #f6f8fa;
+    border: 1px solid #e5e9ef;
+    border-radius: 0.25rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    margin: 0 0 1.5rem;
+}
+
+.bio-card .cv-download a {
+    font-weight: 600;
+}
+
+.bio-card .cv-download span {
+    color: #6c757d;
+}
+
+/* CV 页里每个项目的小标题 */
+.bio-card h3 {
+    font-size: 1rem;
+    margin-top: 1.6rem;
+    margin-bottom: 0.15rem;
+}
+
+/* 小标题下面那行斜体（角色 / 时间 / 技术栈） */
+.bio-card h3 + p em,
+.bio-card h3 + p {
+    color: #6c757d;
+    font-size: 0.88rem;
+    margin-top: 0;
+}
+
+/* ---------- 窄屏 ---------- */
+
+@media (max-width: 767.98px) {
+    .two-col-layout {
+        flex-direction: column;
+    }
+
+    .sidebar-col {
+        position: static;
+        width: 100%;
+        flex: none;
+    }
+
+    .bio-card {
+        padding: 1.5rem;
+    }
+
+    .bio-card .cv-entry {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .acad-nav-inner {
+        padding: 0.6rem 1rem;
+    }
+
+    .main {
+        padding-top: 6.5rem;   /* 顶栏在窄屏会折行变高 */
+    }
+}

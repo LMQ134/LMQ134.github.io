@@ -1,0 +1,19 @@
+# Hugo 构建产物
+public/
+resources/
+.hugo_build.lock
+hugo_stats.json
+
+# 原始素材：简历 docx、原始照片。
+#
+# 这个仓库是 LMQ134.github.io，用户站必须是公开仓库——提交了就等于
+# 把简历里的手机号、出生日期一起公开了。网站要用的是已经处理过的
+# static/cv.pdf 和 static/profile.png，这两份源文件留在本地即可。
+#
+# 想备份它们就删掉下面这行，但要清楚那意味着公开。
+资料/
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+*.swp

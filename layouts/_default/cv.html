@@ -1,0 +1,29 @@
+{{- define "main" }}
+
+{{- /* CV 页。用和首页一样的两栏：左边名片不动，右边换成完整简历。
+       名片抽在 partials/acad-sidebar.html，两处共用。 */ -}}
+
+<div class="acad-wrap">
+  <div class="two-col-layout">
+
+    {{- partial "acad-sidebar.html" . }}
+
+    <div class="main-col">
+      <div class="bio-card">
+
+        {{- /* 下载条放在模板里而不是 markdown 里：Hugo 不解析正文里的
+               Go 模板（只认短代码），写进 .md 会原样输出 {{ ... }}。
+               而且放在这里 URL 能用 relURL 正确生成。 */}}
+        <p class="cv-download">
+          <a href="{{ "cv.pdf" | relURL }}">下载 PDF 版</a>
+          <span>（一页，257 KB）</span>
+        </p>
+
+        {{ .Content }}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{{- end }}

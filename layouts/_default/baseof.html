@@ -1,0 +1,32 @@
+{{- if lt hugo.Version "0.147.2" }}
+{{- errorf "=> hugo v0.147.2 or greater is required for hugo-PaperMod to build " }}
+{{- end -}}
+
+<!DOCTYPE html>
+<html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}">
+
+<head>
+    {{- partial "head.html" . }}
+</head>
+
+<body class="
+{{- if (or (ne .Kind `page` ) (eq .Layout `archives`) (eq .Layout `search`)) -}}
+{{- print "list" -}}
+{{- end -}}
+{{- if .IsHome -}}
+{{- print " home" -}}
+{{- end -}}
+{{- if eq site.Params.defaultTheme `dark` -}}
+{{- print " dark" }}
+{{- end -}}
+" id="top">
+    {{- /* 首页也显示顶栏。原模板在首页不显示，因为它的首页是居中的
+           名片布局、导航交给 profile 模式的按钮；这个方向首页是两栏，
+           顶栏留着才能进 Projects / Notes。 */}}
+    {{- partialCached "header.html" . .Page -}}
+    <main class="main">
+        {{- block "main" . }}{{ end }}
+    </main>
+    {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") -}}
+</body>
+</html>

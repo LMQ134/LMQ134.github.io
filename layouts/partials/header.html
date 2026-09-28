@@ -1,0 +1,29 @@
+{{- /* 学术主页的顶栏。
+       覆盖 PaperMod 自带的那个：原版是"站点标题 + 菜单"，这里要的是
+       "姓名 + 头衔" 两行，并且固定在顶部（内容卡片是白的，顶栏得压在上面）。
+       主题切换按钮没保留——站点固定浅色，用不上。
+*/ -}}
+
+<header class="acad-nav">
+  <div class="acad-nav-inner">
+
+    <a class="acad-brand" href="{{ "" | relLangURL }}" accesskey="h" title="{{ site.Title }}">
+      <span class="acad-brand-name">{{ site.Title }}</span>
+      {{- with site.Params.brandTitle }}
+      <span class="acad-brand-title">{{ . }}</span>
+      {{- end }}
+    </a>
+
+    {{- with site.Menus.main }}
+    <nav class="acad-menu">
+      {{- $current := $.RelPermalink }}
+      {{- range . }}
+        {{- $url := .URL | relLangURL }}
+        {{- $active := or (eq $current $url) (and (ne .URL "/") (hasPrefix $current $url)) }}
+        <a href="{{ $url }}"{{ if $active }} class="active"{{ end }}>{{ .Name }}</a>
+      {{- end }}
+    </nav>
+    {{- end }}
+
+  </div>
+</header>
