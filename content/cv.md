@@ -8,7 +8,8 @@ description: "Curriculum vitae of Mingquan Li — education, awards, projects, a
 
 <div class="cv-entry"><span class="when">2023 – present</span><span>
 <strong>Lanzhou University</strong> — B.Eng. in Microelectronics Science and Engineering<br>
-School of Physics · ranked in the top 30% of the major
+School of Physics · Project 985, one of China's leading universities · ranked in the
+top 30% of the major
 </span></div>
 
 ## Awards

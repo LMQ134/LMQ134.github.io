@@ -1,5 +1,6 @@
 I am an undergraduate in **Microelectronics Science and Engineering** at
-[Lanzhou University](https://www.lzu.edu.cn/), in the School of Physics. I work on
+[Lanzhou University](https://www.lzu.edu.cn/) — one of China's leading universities —
+in the School of Physics. I work on
 **computer architecture and digital integrated circuit design** — processors, hardware
 accelerators, and the FPGA implementations of both.
 
@@ -26,7 +27,8 @@ which is the reason I want to keep going.
 
 <div class="cv-entry"><span class="when">2023 – present</span><span>
 <strong>Lanzhou University</strong> — B.Eng. in Microelectronics Science and Engineering<br>
-School of Physics · ranked in the top 30% of the major
+School of Physics · Project 985, one of China's leading universities · ranked in the
+top 30% of the major
 </span></div>
 
 ## Honors & Awards
