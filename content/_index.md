@@ -45,7 +45,7 @@ top 30% of the major
   with hazard handling, a CP0 exception module, I-Cache and UART peripherals. The
   project became a measured optimisation campaign against two objectives that fight
   each other — cycles per benchmark and nanoseconds per clock period — ending at
-  **117.65 MHz (+17.6%) and IPC 0.67**, with the streaming benchmark at 9.1 cycles per
+  **75 → 117 MHz (+56%) and IPC 0.67**, with the streaming benchmark at 9.1 cycles per
   word. Includes three optimisations that were tried, measured, and abandoned.
   [Details]({{< relref "/projects/mips-processor" >}})
 

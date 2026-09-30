@@ -3,7 +3,7 @@ title: "A 32-bit MIPS Processor, and the Optimisation Campaign Behind It"
 date: 2026-08-01
 weight: 1
 description: "A five-stage pipelined MIPS SoC taken from RTL to a timing-closed 117 MHz implementation — and the eighteen months of measured optimisation that got it there."
-summary: "Sole developer. 47 MIPS instructions, precise exceptions, CP0, I-Cache and UART in a minimal SoC. A campaign of measured performance and timing work: +17.6% frequency, load-store forwarding that took the streaming benchmark to 9.1 cycles per word, and a hardware divider that cost 5.6% of the clock and returned 5x on modulo-heavy code."
+summary: "Sole developer. 47 MIPS instructions, precise exceptions, CP0, I-Cache and UART in a minimal SoC. A campaign of measured performance and timing work: 75 → 117 MHz, load-store forwarding that took the streaming benchmark to 9.1 cycles per word, and a hardware divider that cost 5.6% of the clock and returned 5x on modulo-heavy code."
 tags: ["MIPS", "Verilog", "Computer Architecture", "FPGA", "Timing"]
 ---
 
@@ -72,10 +72,10 @@ this project: at that point every failing path family was 69–83% *routing* del
 logic. The logic was already thin. Continuing would have been whack-a-mole against
 place-and-route, trading hours for a tenth of a nanosecond.
 
-So instead of cutting, **I changed the clock**. Dropping to 117.65 MHz turned the
-design positive at +0.16 ns with a single parameter change, for a **net +17.6%
-frequency** over where the project started — and every benchmark improved
-proportionally, because they all scale with clock.
+So instead of cutting, **I changed the clock**. Dropping to 117 MHz turned the
+design positive at +0.16 ns with a single parameter change — and every benchmark
+improved proportionally, because they all scale with clock. End to end, the
+achievable maximum frequency went from **75 MHz to 117 MHz (+56%)**.
 
 **Three optimisations were tried and abandoned**, which is the other half of the work:
 
@@ -109,6 +109,6 @@ gave up 10% of the clock to keep **≥ 1 ns of margin**.
 | | |
 |---|---|
 | Instructions | 47 MIPS instructions |
-| Frequency | **117.65 MHz** at final verification, from 100 MHz (+17.6%); 100 MHz with ≥1 ns margin for the competition build |
+| Frequency | **117 MHz** at final verification, up from 75 MHz (+56%); competition build shipped at 100 MHz with ≥1 ns margin |
 | IPC | **0.67** |
 | Benchmark profile | 9.1 cycles/word streaming copy · 15.4 cycles per MAC · ~26 cycles/round on the crypto kernel |

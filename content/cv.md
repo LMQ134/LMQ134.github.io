@@ -48,8 +48,8 @@ that fight each other: cycles per benchmark, and nanoseconds per clock period.
   comparator (the single best fix, −0.558 ns), `max_fanout` replication on a
   7714-load signal, stall-signal expansion, and two-stage PC enable. Three rounds at
   125 MHz converged to −0.342 ns with every failing path 69–83% **routing**-dominated —
-  so instead of continuing, **the clock was changed**, landing at **117.65 MHz with
-  WNS +0.16 ns and a net +17.6% frequency**.
+  so instead of continuing, **the clock was changed**, landing at **117 MHz with
+  WNS +0.16 ns** — **75 → 117 MHz end to end (+56%)**.
 - **Tried, measured, and abandoned:** D-Cache (WNS −1.086 ns; the crypto benchmark's
   access pattern is near-random), sequential-read SRAM prefetch (WNS −1.134 ns), and
   algorithm-level work on the crypto kernel — dropped after a trace-based
