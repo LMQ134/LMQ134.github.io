@@ -13,6 +13,10 @@ merely simulates correctly and one that stays reliable when the physical environ
 stops cooperating. Both projects raised more research questions than they answered,
 which is the reason I want to keep going.
 
+The questions I keep returning to are about the **design flow itself**: why a design's
+outcome is decided by information that only exists after synthesis and place-and-route,
+and what it would take to know it earlier.
+
 ## Research Interests
 
 - **Computer Architecture** — pipelining, caches, and the memory hierarchy; the
@@ -22,6 +26,11 @@ which is the reason I want to keep going.
   allowed to be
 - **Digital IC Design** — RTL to timing-closed implementation, clock-domain crossing
   reliability, and low-power design
+- **AI for Design Automation** — machine learning for the design flow: predicting
+  post-synthesis and post-place-and-route quality before running it, and the circuit
+  representation problem underneath. My interest comes from the implementation side,
+  where I have measured the outcome being decided by quantities that are not in the RTL
+  at all.
 
 ## Education
 

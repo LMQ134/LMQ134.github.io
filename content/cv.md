@@ -4,6 +4,14 @@ layout: "cv"
 description: "Curriculum vitae of Mingquan Li — education, awards, projects, and skills."
 ---
 
+## Research Interests
+
+**Computer architecture** — pipelining, caches and the memory hierarchy · **Digital IC
+design** — RTL to timing-closed implementation, clock-domain crossing, low-power design ·
+**Hardware accelerators** under a fixed resource budget · **AI for design automation** —
+predicting post-synthesis and post-place-and-route quality, and the circuit representation
+problem underneath it.
+
 ## Education
 
 <div class="cv-entry"><span class="when">2023 – present</span><span>

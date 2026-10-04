@@ -29,7 +29,7 @@ menu:
       weight: 4
 
 params:
-  description: "Mingquan Li — undergraduate in Microelectronics Science and Engineering at Lanzhou University. Computer architecture and digital IC design."
+  description: "Mingquan Li — undergraduate in Microelectronics Science and Engineering at Lanzhou University. Computer architecture, digital IC design, and machine learning for design automation."
   author: Mingquan Li
   DateFormat: "2006-01-02"
 
