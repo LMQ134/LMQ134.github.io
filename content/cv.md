@@ -43,11 +43,25 @@ it: hazard handling, a CP0 exception module, I-Cache, and UART peripherals. The 
 became a recorded optimisation campaign against two objectives
 that fight each other: cycles per benchmark, and nanoseconds per clock period.
 
+- **Non-blocking load-store unit** — the largest change in the project. The off-chip
+  asynchronous SRAM has a 3-cycle read latency, and a fully in-order pipeline has
+  nowhere to put it: a `lw` in M froze everything behind it. Rebuilt so that a load's
+  *issue* and its *completion* are separate events — a 32-bit **`busy` scoreboard** (one
+  bit per register) marks the destination on issue and clears it on writeback; the
+  hazard unit changed from *is a load in E* to *has this instruction's source register
+  gone busy*, stalling that one instruction rather than the machine; a 2-entry request
+  queue feeds the SRAM controller back-to-back with no handshake bubble; a response FIFO
+  carrying `{valid, rd, rdata}` drives a register-file write port directly, so data never
+  re-enters the pipeline. Two hazards had to be closed: **WAW** (an `ori` writing back
+  before an older load returns and then being clobbered by it — fixed by barring a busy
+  destination from W) and **precise exceptions** (the redirect waits for the busy bitmap
+  to clear). Result: **~6–7 cycles/word streaming** and **9–10 cycles/MAC on matrix**,
+  and **no change at all on the memory-hard kernel** — nothing independent is left to
+  overlap, which is the same finding that killed the D-Cache.
 - **Performance:** single-cycle DSP-mapped multiply (removing a 2–3 cycle stall);
   load-store forwarding that lets a store take its data directly from the M-stage
-  memory output, removing a two-cycle load-use stall and bringing the streaming
-  benchmark to **9.1 cycles per word**; a non-blocking write buffer with ordered drain;
-  a two-way set-associative I-Cache with a single-line bypass buffer and prefetch.
+  memory output, removing a two-cycle load-use stall; a two-way set-associative I-Cache
+  with a single-line bypass buffer and prefetch.
 - **Hardware division**, the change that cost more than it gave: a 32-round restoring
   remainder state machine turned `/` and `%` into single instructions for roughly
   **5× on modulo-heavy code**, at a cost of **5.6% of the clock**.

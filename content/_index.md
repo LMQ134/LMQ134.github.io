@@ -19,8 +19,9 @@ and what it would take to know it earlier.
 
 ## Research Interests
 
-- **Computer Architecture** — pipelining, caches, and the memory hierarchy; the
-  quantitative trade-off between instruction issue and retirement
+- **Computer Architecture** — pipelining, caches, and the memory hierarchy; extracting
+  memory-level parallelism from in-order hardware, and the scoreboarding and hazard
+  logic that keeps it correct
 - **Hardware Accelerators** — domain-specific accelerators (CNN, graph) under a fixed
   resource budget, where 220 DSP48s and about 5 Mb of BRAM decide what the design is
   allowed to be
@@ -54,8 +55,11 @@ top 30% of the major
   with hazard handling, a CP0 exception module, I-Cache and UART peripherals. The
   project became a measured optimisation campaign against two objectives that fight
   each other — cycles per benchmark and nanoseconds per clock period — ending at
-  **75 → 117 MHz (+56%) and IPC 0.67**, with the streaming benchmark at 9.1 cycles per
-  word. Includes three optimisations that were tried, measured, and abandoned.
+  **75 → 117 MHz (+56%) and IPC 0.67**. Its largest change was rebuilding the load-store
+  unit around a busy scoreboard so that loads no longer stop the pipeline: **streaming
+  to ~6–7 cycles per word and matrix to 9–10 per MAC**, and **no gain at all on the
+  memory-hard kernel**, which is the honest half of the result. Includes three further
+  optimisations that were tried, measured, and abandoned.
   [Details]({{< relref "/projects/mips-processor" >}})
 
 - **2026 — An intelligent digital security sensor.** *(2026 FMSH Cup finalist entry)*

@@ -3,7 +3,7 @@ title: "A 32-bit MIPS Processor, and the Optimisation Campaign Behind It"
 date: 2026-08-01
 weight: 1
 description: "A five-stage pipelined MIPS SoC taken from RTL to a timing-closed 117 MHz implementation — and the eighteen months of measured optimisation that got it there."
-summary: "Sole developer. 47 MIPS instructions, precise exceptions, CP0, I-Cache and UART in a minimal SoC. A campaign of measured performance and timing work: 75 → 117 MHz, load-store forwarding that took the streaming benchmark to 9.1 cycles per word, and a hardware divider that cost 5.6% of the clock and returned 5x on modulo-heavy code."
+summary: "Sole developer. 47 MIPS instructions, precise exceptions, CP0, I-Cache and UART in a minimal SoC. A campaign of measured performance and timing work: 75 → 117 MHz, a load-store unit rebuilt around a busy scoreboard so loads no longer stop the pipeline (streaming to ~6–7 cycles per word, matrix to 9–10 per MAC, and no gain at all on the memory-hard kernel), and a hardware divider that cost 5.6% of the clock and returned 5x on modulo-heavy code."
 tags: ["MIPS", "Verilog", "Computer Architecture", "FPGA", "Timing"]
 ---
 
@@ -33,7 +33,8 @@ benchmarks each saved about two cycles per operation.
 instead of waiting for it to land in the register file — removing a two-cycle load-use
 stall. Only word loads qualify; `lb` and `lh` need sign extension and cannot be taken
 raw. This one change is most of the pure-CPU performance on the memory benchmark,
-which settled at **~9.1 cycles per word**.
+which at this point in the campaign stood at **~9.1 cycles per word** — before the
+load-store unit was decoupled, below.
 
 **A non-blocking write buffer.** Store requests are accepted and released in one cycle,
 with the drain happening in the background. Draining blocks new requests, which gives
@@ -51,6 +52,67 @@ is the whole design in miniature.
 LRU, a single-line bypass buffer, unconditional prefetch, and a stalled-instruction
 buffer. The Tag array is read asynchronously on a stable index so the fetch path is not
 chained behind `next_pc`.
+
+## Decoupling memory from compute
+
+Everything above optimises a pipeline that stops. The largest change in the project
+removed that assumption.
+
+**The problem.** The off-chip asynchronous SRAM has a three-cycle read latency, and a
+fully in-order pipeline has nowhere to put that latency. A `lw` in the M stage froze
+everything behind it. Three perfectly independent `addiu` instructions would sit and
+wait for a read they had nothing to do with.
+
+**The change.** The load-store unit was rewritten so that a load's *issue* and its
+*completion* are separate events. A `lw` computes its address in E, deposits the
+request in M, and leaves. The pipeline does not wait for the data; only the instruction
+that consumes it waits. The design is not register renaming and it is not out-of-order
+issue — it is a much narrower move: **memory runs ahead of the pipeline, and the
+scoreboard is what keeps that honest.**
+
+Four pieces:
+
+- **A 32-bit `busy` scoreboard**, one bit per architectural register. Set when a load
+  issues in M, cleared when its data reaches the register file.
+- **The hazard unit changed what it asks.** It used to ask *is a load in E*. It now asks
+  *is a source register of the instruction in D marked busy* — and stalls that one
+  instruction rather than the machine.
+- **A two-entry request queue** between M and the SRAM controller, so that back-to-back
+  loads present the next transaction in the same cycle the current one completes, with
+  no handshake bubble on the bus.
+- **A response FIFO** whose entries carry `{valid, rd, rdata}`, with its head wired
+  straight to a register-file write port. The data does not have to re-enter the
+  pipeline to be written back. The one-entry write buffer was widened into a store
+  queue at the same time, which brings an address comparison with it: an incoming load
+  checks its address against every in-flight store and forwards from the queue on a
+  match.
+
+**Two hazards this created, and how they were closed.**
+
+*Write-after-write.* `lw $t0` followed immediately by `ori $t0, $0, 5`: the `ori`
+computes in one cycle and writes back, and two cycles later the older load returns and
+overwrites the good value with stale data. The fix is that an instruction whose
+destination is already marked busy is not allowed into W.
+
+*Precise exceptions.* With loads still in flight, an exception or a `syscall` cannot be
+taken — the architectural state is not yet the state the exception should be reported
+against. The redirect waits for the busy bitmap to clear.
+
+**What it bought, and where it bought nothing.** The three benchmarks separate cleanly:
+
+| Benchmark | Before | After |
+|---|---|---|
+| MATRIX — two reads and a MAC per inner iteration | 15.4 cycles per MAC | **9–10** |
+| STREAM — load-store chain over a streaming array | 9.1 cycles per word | **~6–7** |
+| CryptoNight — memory-hard | ~26 cycles per round | **unchanged** |
+
+CryptoNight not moving is the interesting result, and it is the same result as the
+abandoned D-Cache. The load is followed immediately by instructions that all depend on
+it — there is nothing independent left to run while the read is in flight. Decoupling
+the load from the pipeline buys nothing when there is nothing to overlap it with, and a
+memory-hard kernel is defined by having nothing. The unit is worth its area on MATRIX and
+STREAM and worth none of it on CryptoNight, and I would rather know which than assume
+it helps everywhere.
 
 ## Timing: three rounds at 125 MHz, then a decision
 
@@ -111,4 +173,4 @@ gave up 10% of the clock to keep **≥ 1 ns of margin**.
 | Instructions | 47 MIPS instructions |
 | Frequency | **117 MHz** at final verification, up from 75 MHz (+56%); competition build shipped at 100 MHz with ≥1 ns margin |
 | IPC | **0.67** |
-| Benchmark profile | 9.1 cycles/word streaming copy · 15.4 cycles per MAC · ~26 cycles/round on the crypto kernel |
+| Benchmark profile | streaming copy **~6–7 cycles/word** · matrix **9–10 cycles per MAC** · crypto kernel **~26 cycles/round** (unchanged — memory-hard) |
