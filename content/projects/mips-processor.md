@@ -172,5 +172,5 @@ gave up 10% of the clock to keep **≥ 1 ns of margin**.
 |---|---|
 | Instructions | 47 MIPS instructions |
 | Frequency | **117 MHz** at final verification, up from 75 MHz (+56%); competition build shipped at 100 MHz with ≥1 ns margin |
-| IPC | **0.67** |
+| CPI | **1.16** |
 | Benchmark profile | streaming copy **~6–7 cycles/word** · matrix **9–10 cycles per MAC** · crypto kernel **~26 cycles/round** (unchanged — memory-hard) |

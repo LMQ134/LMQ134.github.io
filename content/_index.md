@@ -55,7 +55,7 @@ top 30% of the major
   with hazard handling, a CP0 exception module, I-Cache and UART peripherals. The
   project became a measured optimisation campaign against two objectives that fight
   each other — cycles per benchmark and nanoseconds per clock period — ending at
-  **75 → 117 MHz (+56%) and IPC 0.67**. Its largest change was rebuilding the load-store
+  **75 → 117 MHz (+56%) and CPI 1.16**. Its largest change was rebuilding the load-store
   unit around a busy scoreboard so that loads no longer stop the pipeline: **streaming
   to ~6–7 cycles per word and matrix to 9–10 per MAC**, and **no gain at all on the
   memory-hard kernel**, which is the honest half of the result. Includes three further

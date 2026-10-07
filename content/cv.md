@@ -76,7 +76,7 @@ that fight each other: cycles per benchmark, and nanoseconds per clock period.
   access pattern is near-random), sequential-read SRAM prefetch (WNS −1.134 ns), and
   algorithm-level work on the crypto kernel — dropped after a trace-based
   reconstruction showed the addresses were fully random.
-- **IPC 0.67**; a competition build at 100 MHz deliberately leaving **≥ 1 ns margin**,
+- **CPI 1.16**; a competition build at 100 MHz deliberately leaving **≥ 1 ns margin**,
   after a build with +0.107 ns WNS passed simulation and CI and then failed at random
   on hardware.
 
