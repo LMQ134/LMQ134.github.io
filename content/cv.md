@@ -22,6 +22,11 @@ top 30% of the major
 
 ## Awards
 
+<div class="cv-entry"><span class="when">2026</span><span>
+<strong>Lanzhou University Outstanding Student Scholarship</strong><br>
+Second Class, university level
+</span></div>
+
 <div class="cv-entry"><span class="when">Aug 2026</span><span>
 <strong>National College Student Computer System Capability Competition</strong><br>
 CPU Design Competition — Excellence Award, national level
@@ -132,4 +137,4 @@ Xilinx Vivado — synthesis, implementation, timing closure, ILA debug · FPGA d
 
 ---
 
-<small>Last updated: September 2026</small>
+<small>Last updated: October 2026</small>

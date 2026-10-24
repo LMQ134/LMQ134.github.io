@@ -43,6 +43,8 @@ top 30% of the major
 
 ## Honors & Awards
 
+- **2026** — Lanzhou University Outstanding Student Scholarship: Second Class (university
+  level)
 - **Aug 2026** — National College Student Computer System Capability Competition, CPU
   Design Competition: Excellence Award (national level)
 - **Aug 2026** — "FMSH Cup" National College Students Electronic Design Invitational
