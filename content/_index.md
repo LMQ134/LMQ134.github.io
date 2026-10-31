@@ -6,12 +6,13 @@ accelerators, and the FPGA implementations of both.
 
 I came to this through building things end to end rather than purely from theory. A
 32-bit pipelined MIPS processor I designed and brought from RTL to a 117 MHz
-implementation taught me that timing closure is fundamentally an **architectural**
-design problem, not a tool optimisation task. A fully digital fault-injection sensor
-spanning four clock domains taught me the practical divide between a circuit that
-merely simulates correctly and one that stays reliable when the physical environment
-stops cooperating. Both projects raised more research questions than they answered,
-which is the reason I want to keep going.
+implementation — and then, after the competition, took past single issue into a
+two-wide machine with register renaming — taught me that timing closure is
+fundamentally an **architectural** design problem, not a tool optimisation task. A
+fully digital fault-injection sensor spanning four clock domains taught me the practical
+divide between a circuit that merely simulates correctly and one that stays reliable
+when the physical environment stops cooperating. Both projects raised more research
+questions than they answered, which is the reason I want to keep going.
 
 The questions I keep returning to are about the **design flow itself**: why a design's
 outcome is decided by information that only exists after synthesis and place-and-route,
@@ -20,8 +21,9 @@ and what it would take to know it earlier.
 ## Research Interests
 
 - **Computer Architecture** — pipelining, caches, and the memory hierarchy; extracting
-  memory-level parallelism from in-order hardware, and the scoreboarding and hazard
-  logic that keeps it correct
+  memory-level parallelism from in-order hardware, and the scoreboarding, renaming and
+  hazard logic that keeps it correct while the machine runs wider than one instruction
+  per cycle
 - **Hardware Accelerators** — domain-specific accelerators (CNN, graph) under a fixed
   resource budget, where 220 DSP48s and about 5 Mb of BRAM decide what the design is
   allowed to be
@@ -37,8 +39,8 @@ and what it would take to know it earlier.
 
 <div class="cv-entry"><span class="when">2023 – present</span><span>
 <strong>Lanzhou University</strong> — B.Eng. in Microelectronics Science and Engineering<br>
-School of Physics · Project 985, one of China's leading universities · ranked in the
-top 30% of the major
+School of Physics · Project 985, one of China's leading universities ·
+<strong>GPA 85/100</strong> · ranked in the top 30% of the major
 </span></div>
 
 ## Honors & Awards
@@ -60,8 +62,12 @@ top 30% of the major
   **75 → 117 MHz (+56%) and CPI 1.16**. Its largest change was rebuilding the load-store
   unit around a busy scoreboard so that loads no longer stop the pipeline: **streaming
   to ~6–7 cycles per word and matrix to 9–10 per MAC**, and **no gain at all on the
-  memory-hard kernel**, which is the honest half of the result. Includes three further
-  optimisations that were tried, measured, and abandoned.
+  memory-hard kernel**, which is the honest half of the result. Afterwards the same core
+  went **two-wide** — register renaming into a 48-entry physical register file, dynamic
+  pairing, a load fast path and an 8-entry branch target buffer — for **another 34% on
+  streaming (5.64 cycles/word) and 24% on matrix multiply** against the identical RTL
+  issuing one instruction per cycle, with a golden-model differ catching the 26 bugs it
+  took. Includes three further optimisations that were tried, measured, and abandoned.
   [Details]({{< relref "/projects/mips-processor" >}})
 
 - **2026 — An intelligent digital security sensor.** *(2026 FMSH Cup finalist entry)*

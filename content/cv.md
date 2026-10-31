@@ -16,8 +16,8 @@ problem underneath it.
 
 <div class="cv-entry"><span class="when">2023 – present</span><span>
 <strong>Lanzhou University</strong> — B.Eng. in Microelectronics Science and Engineering<br>
-School of Physics · Project 985, one of China's leading universities · ranked in the
-top 30% of the major
+School of Physics · Project 985, one of China's leading universities ·
+<strong>GPA 85/100</strong> · ranked in the top 30% of the major
 </span></div>
 
 ## Awards
@@ -84,6 +84,33 @@ that fight each other: cycles per benchmark, and nanoseconds per clock period.
 - **CPI 1.16**; a competition build at 100 MHz deliberately leaving **≥ 1 ns margin**,
   after a build with +0.107 ns WNS passed simulation and CI and then failed at random
   on hardware.
+
+*Superscalar extension · Oct 2026 · separate branch of the same RTL, competition core
+left as shipped*
+
+- **Register renaming, out-of-order completion** — the 32 architectural registers
+  replaced by a rename table, a free list and a **48-entry physical register file**;
+  issue stayed in order, completion did not. Performance-neutral by itself and
+  structurally necessary for two-wide writeback.
+- **Two-wide in-order issue** — 64-bit fetch out of the I-Cache line, a **4-entry fetch
+  queue** with dynamic pairing, slot 0 full-function and slot 1 restricted to plain ALU
+  operations with no dependencies, lockstep E/M/W lanes, a 4-read 3-write physical
+  register file, and a 48-bit bitmap allocator (a ring allocator desynchronises once
+  allocation and release rates differ — it overflowed and corrupted data before being
+  replaced).
+- **Second round, measured first** — per-cycle classifiers showed matrix 40% stalled on
+  in-flight loads and streaming 19% on fetch bubbles; a **load fast path** and an
+  **8-entry direct-mapped branch target buffer** then took another 12.6% and 14.9%.
+- **Result, against the identical RTL with dual issue disabled:** streaming
+  **8.54 → 5.64 cycles/word (−33.9%)**, MATRIX **17.59 → 14.69 cycles/element
+  (−16.5%)**, 16×16 matmul **17.22 → 13.03 cycles/MAC (−24.3%)**, dependent-load chain
+  −6.5%, pure-ALU loop −19.9%.
+- **Verification:** Python golden model, a random program generator (150 instructions
+  with random branches and counted loops) and a differ comparing all 48 physical
+  registers, the rename map and 1 KB of memory — 10/10 seeds on the two-wide core, 6/6
+  single-issue, plus SoC boot and every directed benchmark. **21 RTL and 5 testbench
+  bugs** found and fixed this way. Not yet through place-and-route; 36% of the matrix
+  benchmark's remaining cycles wait on load data, which is the limit of in-order issue.
 
 ### An Intelligent Digital Security Sensor
 *Core developer · Jun – Aug 2026 · FPGA, Verilog, APB, clock-domain crossing*
