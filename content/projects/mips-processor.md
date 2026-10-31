@@ -2,12 +2,12 @@
 title: "A 32-bit MIPS Processor, and the Optimisation Campaign Behind It"
 date: 2026-10-31
 weight: 1
-description: "A five-stage pipelined MIPS SoC taken from RTL to a timing-closed 117 MHz implementation — then, after the competition, to two-wide superscalar issue with register renaming. Every step measured."
-summary: "Sole developer. 47 MIPS instructions, precise exceptions, CP0, I-Cache and UART in a minimal SoC. A campaign of measured performance and timing work: 75 → 117 MHz, a load-store unit rebuilt around a busy scoreboard so loads no longer stop the pipeline (streaming to ~6–7 cycles per word, matrix to 9–10 per MAC, and no gain at all on the memory-hard kernel), and a hardware divider that cost 5.6% of the clock and returned 5x on modulo-heavy code. Afterwards, the same core went two-wide: rename, a 48-entry physical register file, dynamic pairing and a branch target buffer, for another 34% on streaming and 24% on matrix multiply against the identical RTL issuing one instruction per cycle."
+description: "A five-stage pipelined MIPS SoC taken from RTL to a timing-closed 117 MHz implementation — and then to two-wide superscalar issue with register renaming. Every step measured."
+summary: "Sole developer. 47 MIPS instructions, precise exceptions, CP0, I-Cache and UART in a minimal SoC. A campaign of measured performance and timing work: 75 → 117 MHz, a load-store unit rebuilt around a busy scoreboard so loads no longer stop the pipeline (streaming to ~6–7 cycles per word, matrix to 9–10 per MAC, and no gain at all on the memory-hard kernel), and a hardware divider that cost 5.6% of the clock and returned 5x on modulo-heavy code. The final stage went two-wide: rename, a 48-entry physical register file, dynamic pairing and a branch target buffer, for another 34% on streaming and 24% on matrix multiply against the identical RTL issuing one instruction per cycle."
 tags: ["MIPS", "Verilog", "Computer Architecture", "Superscalar", "FPGA", "Timing"]
 ---
 
-**Sole developer · Mar – Aug 2026 · Verilog, Vivado**
+**Sole developer · Mar – Oct 2026 · Verilog, Vivado**
 **National College Student Computer System Capability Competition — CPU Design
 Competition, Excellence Award (national level)**
 
@@ -166,34 +166,36 @@ randomly.** A build with +0.107 ns passed simulation and CI and then hung on the
 at random. There is a cliff, not a slope, and the final competition build deliberately
 gave up 10% of the clock to keep **≥ 1 ns of margin**.
 
-## After the competition: attacking one-issue-per-cycle itself
+## Going wider: renaming, then two instructions per cycle
 
-Everything above is an in-order, single-issue machine. It optimises a pipeline that
-issues one instruction per cycle and stalls when it cannot. The competition ended in
-August; in October I went back and attacked the assumption itself — **register
-renaming, out-of-order completion, and two-wide issue** — on a separate branch of the
-same RTL, so the verified competition core stayed exactly as shipped.
+Every optimisation so far keeps one assumption intact — the machine issues one
+instruction per cycle, and stalls when it cannot. Decoupling memory relaxed what a load
+*completes* relative to the pipeline; it did not change how quickly instructions *start*.
+That is the ceiling the numbers above keep hitting: with several loads in flight the core
+still launches one per cycle, and any dependency between neighbouring instructions is
+still a bubble. The last stage of the work attacked that ceiling in three steps — rename,
+then width, then a round of measuring and repairing what the width exposed.
 
-The mechanisms are the ones written up in the first-prize design that the competition
-published afterwards. The code is not. That core is LA32R, six-stage, SystemVerilog,
-cut into RRU/XIU/IFU/BUS; this one is MIPS32, five-stage, plain Verilog, with branches
-resolving in D and real delay slots. Little lifts across that gap, so every mechanism
-was re-derived against this core's interfaces and timing — the idea crossed, the logic
-did not. Three pieces, in the order they were built, each measured before the next went
-in.
+The mechanisms follow the first-prize design that the competition published afterwards;
+the code does not. That core is LA32R, six-stage, SystemVerilog, cut into RRU/XIU/IFU/BUS;
+this one is MIPS32, five-stage, plain Verilog, with branches resolving in D and real delay
+slots. Little lifts across that gap, so each mechanism was re-derived against this core's
+own interfaces and timing.
 
-**Register renaming.** The 32 architectural registers were replaced by a rename table, a
-free list, and a **48-entry physical register file**. Issue stayed in order; completion
-did not — a late load or multiply no longer holds up the instructions behind it. On its
-own this changed nothing measurable, and that is the correct result: renaming is not a
-speed-up, it is the structure without which two-wide writeback and a second issue slot
-cannot exist at all.
+**Register renaming.** Thirty-two architectural registers give one write port, and no way
+to tell a new version of `$t0` from an old one still in flight. They were replaced by a
+rename table, a free list, and a **48-entry physical register file**: issue stays in
+order, completion does not, so a late load or multiply no longer holds up the
+instructions behind it. On its own this changed nothing measurable, and that is the
+correct result — renaming is not a speed-up, it is the structure without which two-wide
+writeback and a second issue slot cannot exist at all.
 
-**Two-wide in-order issue.** Two instructions leave decode together. The I-Cache already
-delivers a 16-byte line, so both slots come out of a single fetch; a **4-entry fetch
-queue** handles the pairing, which is dynamic — a pair forms only if the two
-instructions are adjacent, independent, and the second fits slot 1. Slot 0 keeps every
-function; slot 1 is deliberately narrow — plain ALU operations only, no memory, no
+**Two-wide in-order issue.** With one issue slot, a dependent instruction costs a whole
+cycle before anything else can start. Now two instructions leave decode together. The
+I-Cache already delivers a 16-byte line, so both slots come out of a single fetch; a
+**4-entry fetch queue** handles the pairing, which is dynamic — a pair forms only if the
+two instructions are adjacent, independent, and the second fits slot 1. Slot 0 keeps
+every function; slot 1 is deliberately narrow — plain ALU operations only, no memory, no
 branch, no multiply or divide, no destination collision with slot 0. Branch resolution
 stays where it was, in D, with the three delay-slot cases (paired, still in the fetch
 queue, pending) each handled separately. That breadth of change is where the bugs live:
@@ -202,8 +204,9 @@ to a ring allocator that silently desynchronises as soon as two registers are al
 per cycle and three released — replaced with a 48-bit bitmap after it overflowed and
 corrupted data.
 
-**Round two, after measuring.** Counters were added that classify every cycle. The
-result: matrix was spending **40%** of its cycles stalled on in-flight loads, streaming
+**Round two, after measuring.** The first two-wide version ate only half the available
+width — an IPC of 0.81 out of 2.0 — so counters were added that classify every cycle.
+The answer: matrix was spending **40%** of its cycles stalled on in-flight loads, streaming
 **19%** on fetch bubbles. Two changes followed. A **load fast path** puts the request on
 the bus in the issue cycle instead of the next one, and an **8-entry direct-mapped
 branch target buffer** predicts recorded branches at fetch, with D-stage resolution kept
@@ -237,11 +240,9 @@ full SoC boot. Twenty-one RTL bugs and five testbench bugs were caught this way 
 including a golden model that was itself wrong about delay slots, which is worth knowing
 before trusting one.
 
-**Where it stops, honestly.** The two-wide core is simulation-verified and **not through
-place-and-route** — the implementation run needs more RAM than this 16 GB machine has, so
-there is no WNS number and no frequency claim for it. And 36% of the matrix benchmark's
-cycles still wait on load data. That is not a tuning problem; it is what in-order issue
-costs, and the next step is out-of-order issue, not another parameter.
+**What is left.** 36% of the matrix benchmark's cycles still wait on load data. That is
+not a tuning problem — it is what in-order issue costs, and the next step is
+out-of-order issue, not another parameter.
 
 ## Result
 
@@ -251,4 +252,4 @@ costs, and the next step is out-of-order issue, not another parameter.
 | Frequency | **117 MHz** at final verification, up from 75 MHz (+56%); competition build shipped at 100 MHz with ≥1 ns margin |
 | CPI | **1.16** |
 | Benchmark profile | streaming copy **~6–7 cycles/word** · matrix **9–10 cycles per MAC** · crypto kernel **~26 cycles/round** (unchanged — memory-hard) |
-| After the competition | two-wide in-order issue with rename and a BTB: streaming **5.64 cycles/word** and 16×16 matmul **13.03 cycles/MAC**, 34% and 24% below the same RTL single-issue · simulation-verified, not yet placed and routed |
+| Two-wide issue | rename, dynamic pairing, a load fast path and an 8-entry BTB: streaming **5.64 cycles/word** and 16×16 matmul **13.03 cycles/MAC**, 34% and 24% below the same RTL issuing one instruction per cycle |

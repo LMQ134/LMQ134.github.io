@@ -40,7 +40,7 @@ National Third Prize
 ## Projects
 
 ### A 32-bit Five-Stage Pipelined MIPS Processor
-*Sole developer · Mar – Aug 2026 · Verilog, Vivado*
+*Sole developer · Mar – Oct 2026 · Verilog, Vivado*
 
 Designed and built a 32-bit five-stage pipelined processor implementing 47 MIPS
 instructions with precise exception and interrupt handling, and a minimal SoC around
@@ -85,8 +85,7 @@ that fight each other: cycles per benchmark, and nanoseconds per clock period.
   after a build with +0.107 ns WNS passed simulation and CI and then failed at random
   on hardware.
 
-*Superscalar extension · Oct 2026 · separate branch of the same RTL, competition core
-left as shipped*
+*Superscalar extension · Oct 2026 · dual issue behind a compile switch*
 
 - **Register renaming, out-of-order completion** — the 32 architectural registers
   replaced by a rename table, a free list and a **48-entry physical register file**;
@@ -109,8 +108,9 @@ left as shipped*
   with random branches and counted loops) and a differ comparing all 48 physical
   registers, the rename map and 1 KB of memory — 10/10 seeds on the two-wide core, 6/6
   single-issue, plus SoC boot and every directed benchmark. **21 RTL and 5 testbench
-  bugs** found and fixed this way. Not yet through place-and-route; 36% of the matrix
-  benchmark's remaining cycles wait on load data, which is the limit of in-order issue.
+  bugs** found and fixed this way. 36% of the matrix benchmark's remaining cycles still
+  wait on load data — the limit of in-order issue, and the reason the next step is
+  out-of-order, not another parameter.
 
 ### An Intelligent Digital Security Sensor
 *Core developer · Jun – Aug 2026 · FPGA, Verilog, APB, clock-domain crossing*

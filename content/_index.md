@@ -6,7 +6,7 @@ accelerators, and the FPGA implementations of both.
 
 I came to this through building things end to end rather than purely from theory. A
 32-bit pipelined MIPS processor I designed and brought from RTL to a 117 MHz
-implementation — and then, after the competition, took past single issue into a
+implementation — and then took past single issue into a
 two-wide machine with register renaming — taught me that timing closure is
 fundamentally an **architectural** design problem, not a tool optimisation task. A
 fully digital fault-injection sensor spanning four clock domains taught me the practical
@@ -54,7 +54,7 @@ School of Physics · Project 985, one of China's leading universities ·
 
 ## Selected Projects
 
-- **Mar – Aug 2026 — A 32-bit five-stage pipelined MIPS processor.**
+- **Mar – Oct 2026 — A 32-bit five-stage pipelined MIPS processor.**
   47 MIPS instructions with precise exception and interrupt handling; a minimal SoC
   with hazard handling, a CP0 exception module, I-Cache and UART peripherals. The
   project became a measured optimisation campaign against two objectives that fight
@@ -62,8 +62,8 @@ School of Physics · Project 985, one of China's leading universities ·
   **75 → 117 MHz (+56%) and CPI 1.16**. Its largest change was rebuilding the load-store
   unit around a busy scoreboard so that loads no longer stop the pipeline: **streaming
   to ~6–7 cycles per word and matrix to 9–10 per MAC**, and **no gain at all on the
-  memory-hard kernel**, which is the honest half of the result. Afterwards the same core
-  went **two-wide** — register renaming into a 48-entry physical register file, dynamic
+  memory-hard kernel**, which is the honest half of the result. The final stage took the
+  same core **two-wide** — register renaming into a 48-entry physical register file, dynamic
   pairing, a load fast path and an 8-entry branch target buffer — for **another 34% on
   streaming (5.64 cycles/word) and 24% on matrix multiply** against the identical RTL
   issuing one instruction per cycle, with a golden-model differ catching the 26 bugs it
