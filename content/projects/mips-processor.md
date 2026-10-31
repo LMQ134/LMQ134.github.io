@@ -176,12 +176,6 @@ still launches one per cycle, and any dependency between neighbouring instructio
 still a bubble. The last stage of the work attacked that ceiling in three steps — rename,
 then width, then a round of measuring and repairing what the width exposed.
 
-The mechanisms follow the first-prize design that the competition published afterwards;
-the code does not. That core is LA32R, six-stage, SystemVerilog, cut into RRU/XIU/IFU/BUS;
-this one is MIPS32, five-stage, plain Verilog, with branches resolving in D and real delay
-slots. Little lifts across that gap, so each mechanism was re-derived against this core's
-own interfaces and timing.
-
 **Register renaming.** Thirty-two architectural registers give one write port, and no way
 to tell a new version of `$t0` from an old one still in flight. They were replaced by a
 rename table, a free list, and a **48-entry physical register file**: issue stays in
