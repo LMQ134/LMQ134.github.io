@@ -1,249 +1,205 @@
 ---
-title: "A 32-bit MIPS Processor, and the Optimisation Campaign Behind It"
+title: "32-bit MIPS Processor: Design and Optimisation"
 date: 2026-10-31
 weight: 1
-description: "A five-stage pipelined MIPS SoC taken from RTL to a timing-closed 117 MHz implementation — and then to two-wide superscalar issue with register renaming. Every step measured."
-summary: "Sole developer. 47 MIPS instructions, precise exceptions, CP0, I-Cache and UART in a minimal SoC. A campaign of measured performance and timing work: 75 → 117 MHz, a load-store unit rebuilt around a busy scoreboard so loads no longer stop the pipeline (streaming to ~6–7 cycles per word, matrix to 9–10 per MAC, and no gain at all on the memory-hard kernel), and a hardware divider that cost 5.6% of the clock and returned 5x on modulo-heavy code. The final stage went two-wide: rename, a 48-entry physical register file, dynamic pairing and a branch target buffer, for another 34% on streaming and 24% on matrix multiply against the identical RTL issuing one instruction per cycle."
+description: "Design and FPGA implementation of a five-stage MIPS processor, including memory-system optimisation, timing closure, and a later two-wide issue extension."
+summary: "A five-stage MIPS SoC supporting 47 instructions. Improved clock frequency from 75 to 117 MHz, redesigned the load-store unit, and later added register renaming and two-wide in-order issue. The later extension reduced cycles by 33.9% on streaming copy and 24.3% on 16×16 matrix multiplication compared with the same RTL in single-issue mode."
 tags: ["MIPS", "Verilog", "Computer Architecture", "Superscalar", "FPGA", "Timing"]
 ---
 
-**Sole developer · Mar – Oct 2026 · Verilog, Vivado**
+**Sole developer · Mar – Oct 2026 · Verilog, Vivado**  
 **National College Student Computer System Capability Competition — CPU Design
 Competition, Excellence Award (national level)**
 
-A 32-bit five-stage pipelined MIPS processor: 47 MIPS instructions, precise exception
-and interrupt handling, and a minimal SoC around it — hazard handling, a CP0 exception
-module, an I-Cache, and UART peripherals.
+I designed a 32-bit five-stage pipelined processor supporting 47 MIPS instructions,
+precise exceptions, and interrupts. The minimal SoC includes hazard handling, CP0,
+a two-way set-associative I-Cache, and UART peripherals.
 
-The instruction set was the easy half. What the project actually became was a long
-campaign of measured optimisation against two objectives that fight each other:
-**cycles per benchmark** and **nanoseconds per clock period**. Almost everything
-interesting is in that fight.
+After the initial implementation, I focused on reducing benchmark cycles and
+improving clock frequency. These objectives sometimes conflicted: a change that
+saved cycles could also lengthen a critical path. I evaluated both effects and
+tested the design on FPGA.
 
-## Performance: each change, and what it bought
+## Datapath and Memory Improvements
 
-**Single-cycle multiply.** The multiplier was a three-state FSM — idle, load inputs,
-done — costing a two-to-three cycle stall on every multiply. Marking the 32×32
-multiplier `(* use_dsp = "yes" *)` maps it directly onto a DSP48 as combinational
-logic with `busy` tied low. Multiply became zero-stall, and the matrix and crypto
-benchmarks each saved about two cycles per operation.
+**Single-cycle multiplication.** The original multiplier used a three-state FSM
+and stalled the pipeline for two to three cycles. I replaced it with a DSP-mapped
+32×32 multiplier using `(* use_dsp = "yes" *)`. This removed the multiplier's
+multi-cycle stall and saved about two cycles per multiply in the matrix and crypto
+benchmarks.
 
-**Load-store forwarding.** When a `sw`'s data depends on the immediately preceding
-`lw`, the store can take the raw word straight from the M-stage memory read data
-instead of waiting for it to land in the register file — removing a two-cycle load-use
-stall. Only word loads qualify; `lb` and `lh` need sign extension and cannot be taken
-raw. This one change is most of the pure-CPU performance on the memory benchmark,
-which at this point in the campaign stood at **~9.1 cycles per word** — before the
-load-store unit was decoupled, below.
+**Load-to-store forwarding.** When a store immediately follows a word load and uses
+its result, the store takes the data directly from the M-stage memory output.
+This removes a two-cycle load-use stall. Byte and halfword loads still require
+their normal extension logic.
 
-**A non-blocking write buffer.** Store requests are accepted and released in one cycle,
-with the drain happening in the background. Draining blocks new requests, which gives
-read-after-write ordering without any address comparison. The buffer later became the
-handshake foundation for other subsystems to drain against.
+**Write buffering.** A one-entry write buffer allows an accepted store to leave
+the pipeline while the buffer completes the memory transaction. New requests wait
+while it drains, preserving read-after-write ordering. The later load-store-unit
+redesign replaces this buffer with a store queue.
 
-**Hardware division — the change that cost more than it gave.** Software long division
-is either a library call or about 160 hand-written instructions. A 32-round restoring
-remainder state machine, one round per cycle, with the pipeline frozen during the
-operation, turned `/` and `%` into single instructions and gave roughly **5× on
-modulo-heavy benchmarks**. It also cost **5.6% of the clock** — see below. That trade
-is the whole design in miniature.
+**Hardware division.** I added a 32-cycle restoring divider for division and
+remainder instructions. It delivered about **5× performance on modulo-heavy
+benchmarks**, but reduced achievable clock frequency by **5.6%**. Its benefit
+therefore depends on how often a workload uses division.
 
-**An I-Cache from the first version.** Two-way set associative, 32 sets, 128-bit lines,
-LRU, a single-line bypass buffer, unconditional prefetch, and a stalled-instruction
-buffer. The Tag array is read asynchronously on a stable index so the fetch path is not
-chained behind `next_pc`.
+**Instruction cache.** The I-Cache has 32 sets, two ways, 128-bit lines, LRU
+replacement, a single-line bypass buffer, prefetching, and a stalled-instruction
+buffer. Reading tags with a stable index keeps the lookup path from depending
+directly on `next_pc`.
 
-## Decoupling memory from compute
+## Overlapping Loads with Independent Instructions
 
-Everything above optimises a pipeline that stops. The largest change in the project
-removed that assumption.
+The off-chip asynchronous SRAM takes three cycles to read. In the original design,
+a load in the M stage stalled the pipeline, including instructions that did not
+depend on its result.
 
-**The problem.** The off-chip asynchronous SRAM has a three-cycle read latency, and a
-fully in-order pipeline has nowhere to put that latency. A `lw` in the M stage froze
-everything behind it. Three perfectly independent `addiu` instructions would sit and
-wait for a read they had nothing to do with.
+I redesigned the load-store unit so that a load could submit its request and leave
+the pipeline before the response returned. Independent instructions could then
+continue until decode reached a dependency or another blocking condition.
 
-**The change.** The load-store unit was rewritten so that a load's *issue* and its
-*completion* are separate events. A `lw` computes its address in E, deposits the
-request in M, and leaves. The pipeline does not wait for the data; only the instruction
-that consumes it waits. The design is not register renaming and it is not out-of-order
-issue — it is a much narrower move: **memory runs ahead of the pipeline, and the
-scoreboard is what keeps that honest.**
+The implementation uses four mechanisms:
 
-Four pieces:
+- A **32-bit register-busy scoreboard** marks a load destination when the request
+  issues and clears it when the result is written back.
+- The **hazard unit** checks whether an instruction in D needs a busy register.
+  A dependent instruction waits in decode; younger instructions cannot pass it
+  because issue remains in order.
+- A **two-entry request queue** supplies the SRAM controller with back-to-back
+  requests, avoiding an extra handshake bubble between transactions.
+- A **response FIFO** carries `{valid, rd, rdata}` directly to a register-file write
+  port. A store queue also checks incoming load addresses and forwards matching
+  pending store data.
 
-- **A 32-bit `busy` scoreboard**, one bit per architectural register. Set when a load
-  issues in M, cleared when its data reaches the register file.
-- **The hazard unit changed what it asks.** It used to ask *is a load in E*. It now asks
-  *is a source register of the instruction in D marked busy* — and stalls that one
-  instruction rather than the machine.
-- **A two-entry request queue** between M and the SRAM controller, so that back-to-back
-  loads present the next transaction in the same cycle the current one completes, with
-  no handshake bubble on the bus.
-- **A response FIFO** whose entries carry `{valid, rd, rdata}`, with its head wired
-  straight to a register-file write port. The data does not have to re-enter the
-  pipeline to be written back. The one-entry write buffer was widened into a store
-  queue at the same time, which brings an address comparison with it: an incoming load
-  checks its address against every in-flight store and forwards from the queue on a
-  match.
+Allowing loads to complete later introduced correctness requirements. To handle
+write-after-write hazards, a younger instruction targeting a busy register must wait
+before writeback; otherwise, an older load could overwrite its result. Exception
+and syscall redirects also wait for pending loads to complete.
 
-**Two hazards this created, and how they were closed.**
-
-*Write-after-write.* `lw $t0` followed immediately by `ori $t0, $0, 5`: the `ori`
-computes in one cycle and writes back, and two cycles later the older load returns and
-overwrites the good value with stale data. The fix is that an instruction whose
-destination is already marked busy is not allowed into W.
-
-*Precise exceptions.* With loads still in flight, an exception or a `syscall` cannot be
-taken — the architectural state is not yet the state the exception should be reported
-against. The redirect waits for the busy bitmap to clear.
-
-**What it bought, and where it bought nothing.** The three benchmarks separate cleanly:
+The measured results for this stage were:
 
 | Benchmark | Before | After |
 |---|---|---|
-| MATRIX — two reads and a MAC per inner iteration | 15.4 cycles per MAC | **9–10** |
-| STREAM — load-store chain over a streaming array | 9.1 cycles per word | **~6–7** |
-| CryptoNight — memory-hard | ~26 cycles per round | **unchanged** |
+| MATRIX — two reads and a MAC per inner iteration | 15.4 cycles/MAC | **9–10 cycles/MAC** |
+| STREAM — streaming load-store loop | 9.1 cycles/word | **~6–7 cycles/word** |
+| CryptoNight kernel | ~26 cycles/round | **Unchanged** |
 
-CryptoNight not moving is the interesting result, and it is the same result as the
-abandoned D-Cache. The load is followed immediately by instructions that all depend on
-it — there is nothing independent left to run while the read is in flight. Decoupling
-the load from the pipeline buys nothing when there is nothing to overlap it with, and a
-memory-hard kernel is defined by having nothing. The unit is worth its area on MATRIX and
-STREAM and worth none of it on CryptoNight, and I would rather know which than assume
-it helps everywhere.
+The tested CryptoNight loop had too little independent work after each load to
+hide the memory latency. This explains why the same mechanism helped MATRIX and
+STREAM but did not improve this kernel.
 
-## Timing: three rounds at 125 MHz, then a decision
+## Timing Closure
 
-At 100 MHz the worst path was 9.65 ns; a 125 MHz period is 8 ns, so **1.7 ns had to
-come out of the logic**. Three rounds of work went in — and the numbers are worth
-listing because most of them are small:
+At a 100 MHz constraint, the worst reported path was 9.65 ns. Reaching a 125 MHz
+target required reducing the path delay to fit an 8 ns period.
 
-| Change | Effect |
+| Change | Reported effect |
 |---|---|
-| I-Cache Tag/Valid to flip-flop arrays with parallel comparators | fetch path 12–13 logic levels → ~8 |
-| `max_fanout` replication on a signal driving 7714 loads | first round's best: −0.718 ns |
-| Stall signal expansion, folding the eject OR | 1–2 levels |
-| Seven equality comparators replaced by one shared mux-driven compare | −1.035 → **−0.558 ns** — the single best fix of the whole run |
-| Two-stage PC enable | one level |
-| PC split into four 8-bit instances with manually replicated inverting LUTs | routing |
+| Flip-flop I-Cache tag/valid arrays and parallel comparators | Fetch path reduced from 12–13 logic levels to about 8 |
+| Replication of a signal driving 7,714 loads using `max_fanout` | 0.718 ns improvement in the first round |
+| Stall-signal simplification | Removed 1–2 logic levels |
+| Shared, mux-selected equality comparator | WNS improved from −1.035 to −0.558 ns in that iteration |
+| Two-stage PC enable | Removed one logic level |
+| PC split into four 8-bit instances with replicated inverting LUTs | Targeted routing delay |
 
-It converged to **−0.342 ns and stopped**. The reason is the finding I would keep from
-this project: at that point every failing path family was 69–83% *routing* delay, not
-logic. The logic was already thin. Continuing would have been whack-a-mole against
-place-and-route, trading hours for a tenth of a nanosecond.
+After three rounds, WNS at 125 MHz was **−0.342 ns**. Routing accounted for
+**69–83%** of delay in the remaining failing paths, so further logic simplification
+offered limited benefit. I changed the target to **117 MHz**, where the design
+achieved **+0.16 ns WNS**. The final frequency was **56% higher** than the original
+75 MHz implementation.
 
-So instead of cutting, **I changed the clock**. Dropping to 117 MHz turned the
-design positive at +0.16 ns with a single parameter change — and every benchmark
-improved proportionally, because they all scale with clock. End to end, the
-achievable maximum frequency went from **75 MHz to 117 MHz (+56%)**.
+I also evaluated changes that I did not keep:
 
-**Three optimisations were tried and abandoned**, which is the other half of the work:
-
-| Attempt | Why it was dropped |
+| Attempt | Reason for stopping |
 |---|---|
-| D-Cache | Combinational-read RAM path gave WNS −1.086 ns (another layout, −3.8); the crypto benchmark's access pattern is nearly random, so the hit rate would not have paid for it |
-| Sequential-read SRAM prefetch (1-cycle return) | WNS −1.134 ns |
-| Algorithm-level work on the crypto benchmark | A trace-based reconstruction showed the kernel was 21 instructions per round at 26.4 cycles, of which two random word loads were ~20% — and the addresses were fully random. There was nothing left to win |
+| D-Cache | Added a combinational-read path with WNS of −1.086 ns; the tested crypto kernel's near-random access pattern offered little expected reuse |
+| Sequential-read SRAM prefetch | WNS of −1.134 ns |
+| Further optimisation of the crypto kernel | Trace analysis found 21 instructions per round at 26.4 cycles, with two random word loads accounting for about 20% of cycles; I did not identify a useful further change in this iteration |
 
-The third one matters as much as the ones that shipped: **it is a measurement that says
-"stop"**, and it was made by reconstructing what the benchmark actually does rather
-than by guessing at it.
+## FPGA Debugging and Timing Margin
 
-## What the hardware taught that the simulator could not
+Board testing exposed problems that simulation had not reproduced. Extending the
+SRAM read window from 20 ns to 30 ns and holding engine addresses for 40 ns resolved
+load corruption and boot failures. I also investigated an implementation issue in
+a read multiplexer spanning blocks.
 
-Two failures only ever appeared on the board, never in simulation:
+One build with **+0.107 ns WNS** passed simulation and CI but hung intermittently
+on the board. Positive WNS alone did not establish reliable operation in that setup.
+The competition build therefore ran at **100 MHz with at least 1 ns of timing
+margin**. The timing-closed 117 MHz build and the 100 MHz competition build are
+separate configurations.
 
-- **The asynchronous SRAM read window.** Going from a two-cycle to a three-cycle read
-  (a 20 ns to 30 ns window) plus holding engine addresses for 40 ns fixed
-  corruption that showed up as bad loads and boot garbage. The two-cycle read is a
-  physical floor that a simulation does not model.
-- **A synthesizer-introduced error** in a read multiplexer spanning blocks.
+## Register Renaming and Two-Wide Issue
 
-And the one I would put on a slide: **WNS near zero means the hardware fails
-randomly.** A build with +0.107 ns passed simulation and CI and then hung on the board
-at random. There is a cliff, not a slope, and the final competition build deliberately
-gave up 10% of the clock to keep **≥ 1 ns of margin**.
+The next extension increased issue width while retaining in-order issue.
 
-## Going wider: renaming, then two instructions per cycle
+**Register renaming.** I added a rename table, a free list, and a **48-entry
+physical register file**. Different writes to an architectural register could use
+different physical destinations, allowing pending results to be tracked separately.
+Renaming alone produced no measurable speedup in these tests; it provided the
+register-management structure used by this extension.
 
-Every optimisation so far keeps one assumption intact — the machine issues one
-instruction per cycle, and stalls when it cannot. Decoupling memory relaxed what a load
-*completes* relative to the pipeline; it did not change how quickly instructions *start*.
-That is the ceiling the numbers above keep hitting: with several loads in flight the core
-still launches one per cycle, and any dependency between neighbouring instructions is
-still a bubble. The last stage of the work attacked that ceiling in three steps — rename,
-then width, then a round of measuring and repairing what the width exposed.
+**Two-wide issue.** A **four-entry fetch queue** pairs adjacent instructions when
+they are independent and the second instruction is supported by slot 1. Slot 0
+handles the full instruction set. Slot 1 supports plain ALU operations, excluding
+loads, stores, branches, multiplication, and division. The physical register file
+has four read ports and three write ports.
 
-**Register renaming.** Thirty-two architectural registers give one write port, and no way
-to tell a new version of `$t0` from an old one still in flight. They were replaced by a
-rename table, a free list, and a **48-entry physical register file**: issue stays in
-order, completion does not, so a late load or multiply no longer holds up the
-instructions behind it. On its own this changed nothing measurable, and that is the
-correct result — renaming is not a speed-up, it is the structure without which two-wide
-writeback and a second issue slot cannot exist at all.
+Branch resolution remains in D. Delay-slot handling covers cases where the delay-slot
+instruction is paired, remains in the queue, or has not yet arrived. During debugging,
+I replaced a ring-based free-list allocator with a 48-bit bitmap after finding
+allocation and release bookkeeping errors.
 
-**Two-wide in-order issue.** With one issue slot, a dependent instruction costs a whole
-cycle before anything else can start. Now two instructions leave decode together. The
-I-Cache already delivers a 16-byte line, so both slots come out of a single fetch; a
-**4-entry fetch queue** handles the pairing, which is dynamic — a pair forms only if the
-two instructions are adjacent, independent, and the second fits slot 1. Slot 0 keeps
-every function; slot 1 is deliberately narrow — plain ALU operations only, no memory, no
-branch, no multiply or divide, no destination collision with slot 0. Branch resolution
-stays where it was, in D, with the three delay-slot cases (paired, still in the fetch
-queue, pending) each handled separately. That breadth of change is where the bugs live:
-eleven across this stage, from a delay-slot check that looked at the wrong queue entry
-to a ring allocator that silently desynchronises as soon as two registers are allocated
-per cycle and three released — replaced with a 48-bit bitmap after it overflowed and
-corrupted data.
+**Profiling and follow-up changes.** The first two-wide version achieved an IPC of
+0.81. Counters showed that MATRIX spent **40%** of cycles waiting for pending loads,
+while STREAM spent **19%** on fetch bubbles. I then added a **load fast path**, which
+submits a request in the issue cycle, and an **eight-entry direct-mapped branch
+target buffer**, checked by D-stage branch resolution. In that optimisation round,
+cycle counts fell by a further **12.6% for MATRIX** and **14.9% for STREAM**.
 
-**Round two, after measuring.** The first two-wide version ate only half the available
-width — an IPC of 0.81 out of 2.0 — so counters were added that classify every cycle.
-The answer: matrix was spending **40%** of its cycles stalled on in-flight loads, streaming
-**19%** on fetch bubbles. Two changes followed. A **load fast path** puts the request on
-the bus in the issue cycle instead of the next one, and an **8-entry direct-mapped
-branch target buffer** predicts recorded branches at fetch, with D-stage resolution kept
-as the check. Between them, another 12.6% on matrix and 14.9% on streaming.
+### Cycle-Level Results
 
-### What two-wide issue actually bought
+The following comparison uses the **same RTL with dual issue enabled or disabled**.
+It comes from a later testbench and should be compared within this table, separately
+from the earlier load-store-unit results.
 
-Compared against the **same RTL with dual issue switched off**, so the numbers are the
-superscalar contribution and nothing else. These come from a later testbench than the
-tables above, so they are only comparable within this table:
-
-| Benchmark | Single issue | **Two-wide** | Change |
+| Benchmark | Single issue | Two-wide issue | Cycle reduction |
 |---|---|---|---|
-| STREAM — copy 256 words | 8.54 cycles/word | **5.64** | **−33.9%** |
-| MATRIX — 256 element products | 17.59 cycles/element | **14.69** | **−16.5%** |
-| 16×16 matrix multiply, 4096 MACs | 17.22 cycles/MAC | **13.03** | **−24.3%** |
-| Pointer chase, 8 dependent loads | 7030 cycles | **6576** | −6.5% |
-| Pure-ALU counted loop | 1147 cycles | **919** | −19.9% |
+| STREAM — copy 256 words | 8.54 cycles/word | **5.64 cycles/word** | **33.9%** |
+| MATRIX — 256 element products | 17.59 cycles/element | **14.69 cycles/element** | **16.5%** |
+| 16×16 matrix multiplication, 4,096 MACs | 17.22 cycles/MAC | **13.03 cycles/MAC** | **24.3%** |
+| Pointer chase, 8 dependent loads | 7,030 cycles | **6,576 cycles** | **6.5%** |
+| Pure-ALU counted loop | 1,147 cycles | **919 cycles** | **19.9%** |
 
-The pattern repeats what the load-store unit already showed: the more independent work a
-benchmark has, the more width it can use. A chain of eight dependent loads gains 6.5%;
-a loop with nothing but arithmetic gains 20%.
+The benefit varies with the available independent work. A dependent load chain
+offers fewer pairing opportunities than an arithmetic loop. These are reductions
+in cycle count; they do not by themselves establish a corresponding improvement
+in clock frequency or wall-clock runtime.
 
-None of that is worth anything if the core computes the wrong numbers, so the superscalar
-version got a verification stack of its own: a **Python golden model** of the ISA, a
-**random program generator** emitting 150-instruction sequences with random branches and
-counted loops, and a **differ** that runs both and compares all 48 physical registers, the
-rename map, and the first 1024 words of memory. Ten of ten random seeds pass on the
-two-wide core, six of six on the single-issue one, plus every directed benchmark and a
-full SoC boot. Twenty-one RTL bugs and five testbench bugs were caught this way —
-including a golden model that was itself wrong about delay slots, which is worth knowing
-before trusting one.
+### Verification and Remaining Limits
 
-**What is left.** 36% of the matrix benchmark's cycles still wait on load data. That is
-not a tuning problem — it is what in-order issue costs, and the next step is
-out-of-order issue, not another parameter.
+I built a Python ISA reference model, a random generator producing 150-instruction
+programs with branches and counted loops, and a differential checker. The checker
+compares the 48 physical registers, rename map, and first 1,024 words of memory.
 
-## Result
+The two-wide core passed **10 random seeds**, and the single-issue configuration
+passed **6**, along with directed benchmarks and SoC boot tests. This process found
+**21 RTL bugs and 5 testbench bugs**, including a delay-slot error in the reference
+model itself. These tests cover the exercised cases rather than establishing
+exhaustive correctness.
 
-| | |
+After the follow-up changes, MATRIX still spent **36%** of cycles waiting for load
+data. In-order issue prevents younger instructions from passing a blocked instruction.
+Out-of-order issue is one possible next step, but would require additional scheduling
+and recovery logic and further evaluation.
+
+## Implementation Summary
+
+| Item | Result |
 |---|---|
-| Instructions | 47 MIPS instructions |
-| Frequency | **117 MHz** at final verification, up from 75 MHz (+56%); competition build shipped at 100 MHz with ≥1 ns margin |
-| CPI | **1.16** |
-| Benchmark profile | streaming copy **~6–7 cycles/word** · matrix **9–10 cycles per MAC** · crypto kernel **~26 cycles/round** (unchanged — memory-hard) |
-| Two-wide issue | rename, dynamic pairing, a load fast path and an 8-entry BTB: streaming **5.64 cycles/word** and 16×16 matmul **13.03 cycles/MAC**, 34% and 24% below the same RTL issuing one instruction per cycle |
+| ISA | 47 MIPS instructions |
+| Single-issue implementation | 75 → **117 MHz (+56%)**, with +0.16 ns WNS at 117 MHz |
+| Competition configuration | **100 MHz**, with at least 1 ns timing margin |
+| Reported CPI | **1.16** |
+| Earlier LSU benchmarks | STREAM ~6–7 cycles/word; MATRIX 9–10 cycles/MAC; crypto kernel ~26 cycles/round |
+| Later two-wide benchmarks | STREAM **5.64 cycles/word**; 16×16 matrix multiplication **13.03 cycles/MAC**, using a separate testbench |

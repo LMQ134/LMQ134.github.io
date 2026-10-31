@@ -1,92 +1,72 @@
-I am an undergraduate in **Microelectronics Science and Engineering** at
-[Lanzhou University](https://www.lzu.edu.cn/) — one of China's leading universities —
-in the School of Physics. I work on
-**computer architecture and digital integrated circuit design** — processors, hardware
-accelerators, and the FPGA implementations of both.
+I am an undergraduate studying **Microelectronics Science and Engineering** in the
+School of Physics at [Lanzhou University](https://www.lzu.edu.cn/). My interests are
+**computer architecture, AI accelerators, and digital IC design**.
 
-I came to this through building things end to end rather than purely from theory. A
-32-bit pipelined MIPS processor I designed and brought from RTL to a 117 MHz
-implementation — and then took past single issue into a
-two-wide machine with register renaming — taught me that timing closure is
-fundamentally an **architectural** design problem, not a tool optimisation task. A
-fully digital fault-injection sensor spanning four clock domains taught me the practical
-divide between a circuit that merely simulates correctly and one that stays reliable
-when the physical environment stops cooperating. Both projects raised more research
-questions than they answered, which is the reason I want to keep going.
+My experience is mainly in RTL design and FPGA implementation. I built a five-stage
+MIPS processor and improved its clock frequency from 75 MHz to 117 MHz through
+changes to the pipeline, memory interface, and critical paths. I later extended it
+with register renaming and two-wide in-order issue. I also worked on an FPGA-based
+security sensor that detects clock glitches and environmental changes and triggers
+a hardware response.
 
-The questions I keep returning to are about the **design flow itself**: why a design's
-outcome is decided by information that only exists after synthesis and place-and-route,
-and what it would take to know it earlier.
+These projects made me interested in how architectural choices affect timing,
+memory access, and resource use after implementation. I would like to study these
+tradeoffs further, including how design automation can help evaluate them earlier.
 
 ## Research Interests
 
-- **Computer Architecture** — pipelining, caches, and the memory hierarchy; extracting
-  memory-level parallelism from in-order hardware, and the scoreboarding, renaming and
-  hazard logic that keeps it correct while the machine runs wider than one instruction
-  per cycle
-- **Hardware Accelerators** — domain-specific accelerators (CNN, graph) under a fixed
-  resource budget, where 220 DSP48s and about 5 Mb of BRAM decide what the design is
-  allowed to be
-- **Digital IC Design** — RTL to timing-closed implementation, clock-domain crossing
-  reliability, and low-power design
-- **AI for Design Automation** — machine learning for the design flow: predicting
-  post-synthesis and post-place-and-route quality before running it, and the circuit
-  representation problem underneath. My interest comes from the implementation side,
-  where I have measured the outcome being decided by quantities that are not in the RTL
-  at all.
+- **Computer Architecture** — processor pipelines, memory systems, and mechanisms
+  for overlapping memory access with computation.
+- **AI and Hardware Accelerators** — dataflow, on-chip storage, and efficient use
+  of compute and memory resources.
+- **Digital IC Design** — RTL design, timing closure, clock-domain crossing, and
+  low-power design.
+- **AI for Design Automation** — learning circuit representations and predicting
+  implementation quality before synthesis and place-and-route.
 
 ## Education
 
 <div class="cv-entry"><span class="when">2023 – present</span><span>
 <strong>Lanzhou University</strong> — B.Eng. in Microelectronics Science and Engineering<br>
-School of Physics · Project 985, one of China's leading universities ·
+School of Physics · Project 985 university<br>
 <strong>GPA 85/100</strong> · ranked in the top 30% of the major
 </span></div>
 
 ## Honors & Awards
 
-- **2026** — Lanzhou University Outstanding Student Scholarship: Second Class (university
-  level)
-- **Aug 2026** — National College Student Computer System Capability Competition, CPU
-  Design Competition: Excellence Award (national level)
+- **2026** — Lanzhou University Outstanding Student Scholarship, Second Class
+- **Aug 2026** — National College Student Computer System Capability Competition,
+  CPU Design Competition: Excellence Award
 - **Aug 2026** — "FMSH Cup" National College Students Electronic Design Invitational
   Contest: National Third Prize
 
 ## Selected Projects
 
-- **Mar – Oct 2026 — A 32-bit five-stage pipelined MIPS processor.**
-  47 MIPS instructions with precise exception and interrupt handling; a minimal SoC
-  with hazard handling, a CP0 exception module, I-Cache and UART peripherals. The
-  project became a measured optimisation campaign against two objectives that fight
-  each other — cycles per benchmark and nanoseconds per clock period — ending at
-  **75 → 117 MHz (+56%) and CPI 1.16**. Its largest change was rebuilding the load-store
-  unit around a busy scoreboard so that loads no longer stop the pipeline: **streaming
-  to ~6–7 cycles per word and matrix to 9–10 per MAC**, and **no gain at all on the
-  memory-hard kernel**, which is the honest half of the result. The final stage took the
-  same core **two-wide** — register renaming into a 48-entry physical register file, dynamic
-  pairing, a load fast path and an 8-entry branch target buffer — for **another 34% on
-  streaming (5.64 cycles/word) and 24% on matrix multiply** against the identical RTL
-  issuing one instruction per cycle, with a golden-model differ catching the 26 bugs it
-  took. Includes three further optimisations that were tried, measured, and abandoned.
+- **Mar – Oct 2026 — 32-bit MIPS Processor**  
+  Designed a five-stage processor supporting 47 MIPS instructions, precise exceptions,
+  and interrupts, with an I-Cache, CP0, and UART in a minimal SoC. Improved the clock
+  frequency from **75 to 117 MHz (+56%)** and redesigned the load-store unit to let
+  independent instructions execute while loads were pending. A later extension added
+  register renaming and two-wide in-order issue. In cycle-level comparisons with the
+  same RTL in single-issue mode, the extended core used **33.9% fewer cycles per word
+  for streaming copy** and **24.3% fewer cycles per MAC for 16×16 matrix multiplication**.
   [Details]({{< relref "/projects/mips-processor" >}})
 
-- **2026 — An intelligent digital security sensor.** *(2026 FMSH Cup finalist entry)*
-  A CPU-independent hardware defence against fault-injection attacks across four clock
-  domains, in three layers (sense / decide / configure): a 51-stage ring-oscillator
-  probe with self-calibrating, frozen baselines; a 16-stage LUT delay line and pulse
-  width monitor for nanosecond glitches; and a watchdog, an arbiter, and an APB
-  register interface. Response bypasses the CPU entirely — NMI for thermal, voltage, or
-  frequency excursion, hardware key erasure for a confirmed glitch.
-  **1382 LUT / 2006 FF / 0.223 W / 200 MHz.**
+- **2026 — FPGA-Based Digital Security Sensor**  
+  Developed a hardware subsystem that monitors clock glitches and temperature- or
+  voltage-related frequency changes across four clock domains. It combines a ring
+  oscillator, delay-line and pulse-width detectors, self-calibration, and a watchdog.
+  The hardware response path raises an NMI or triggers key erasure without waiting
+  for software. Reported implementation figures: **1,382 LUTs, 2,006 FFs, 0.223 W,
+  and a 200 MHz clock**.
   [Details]({{< relref "/projects/security-sensor" >}}) ·
   [Code](https://github.com/LMQ134/fuweibei)
 
-- **2026 – present — Real-time video style transfer on Zynq.** *(in progress)*
-  A camera-to-display pipeline on a Zynq-7020, with the style stage being moved from a
-  lookup-table filter to a small convolutional network in the programmable logic. The
-  binding constraint is the resource budget: a 640×480 frame does not fit in the
-  on-chip BRAM at all, so the frame buffer has to move to DDR and the feature maps
-  have to stay on chip.
+- **2026 – present — Video Style Transfer on Zynq** *(in progress)*  
+  Built a camera-to-display pipeline on a Zynq-7020. The current style stage uses a
+  lookup-table filter; I am working on replacing it with a small convolutional network
+  in programmable logic. The next design steps are to move frame storage to DDR and
+  use line buffers to limit on-chip feature-map storage.
   [Details]({{< relref "/projects/zynq-style-transfer" >}})
 
 ## Skills
@@ -100,12 +80,12 @@ FPGA development · Xilinx Vivado (synthesis, implementation, timing closure, IL
 clock-domain-crossing design · APB
 </span></div>
 
-<div class="cv-entry"><span class="when">Flow</span><span>
-Scripted EDA flows in Tcl and Python — project setup, implementation and bitstream
-generation, timing-report parsing, HDL linting · Git · Make
+<div class="cv-entry"><span class="when">Automation</span><span>
+Tcl and Python scripts for project setup, implementation, bitstream generation,
+timing-report analysis, and HDL linting · Git · Make
 </span></div>
 
 ---
 
-I am applying to Ph.D. programs for **Fall 2027** in computer architecture and digital
-IC design. The best way to reach me is by email.
+I am applying to **Fall 2027 Ph.D. programs** in computer architecture, AI accelerators,
+and digital IC design. Please feel free to contact me by email.

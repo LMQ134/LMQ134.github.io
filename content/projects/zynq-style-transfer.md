@@ -1,63 +1,56 @@
 ---
-title: "Real-Time Video Style Transfer on Zynq"
+title: "Video Style Transfer on Zynq"
 date: 2026-09-01
 weight: 3
-description: "An in-progress system that captures video from an OV5640 camera and styles it on a Zynq-7020, in the PL, at video rate."
-summary: "In progress. A camera-to-display video pipeline on Zynq-7020, with the style-transfer accelerator being moved from a lookup-table filter to a small convolutional network implemented in the programmable logic."
+description: "An in-progress Zynq-7020 video system with camera capture, display output, and a planned convolutional style-transfer accelerator."
+summary: "Built an OV5640 camera-to-display pipeline with a lookup-table style filter. Working on a small convolutional accelerator, DDR frame storage, and line-buffered processing within the Zynq-7020's resource limits."
 tags: ["Zynq", "FPGA", "CNN Accelerator", "Video Pipeline", "Verilog"]
 ---
 
 **In progress · 2026 · Zynq-7020, Verilog, Vivado**
 
-> This one is still being built. What follows is where it actually stands rather
-> than where it is going, because the gap between those two is the interesting part.
+The goal is to capture live video from an OV5640 camera, apply a visual style in
+FPGA programmable logic, and send the result to a display without a host computer.
 
-The target is a system that takes live video from an OV5640 camera and renders it in
-a chosen style on an FPGA, at frame rate, with no host in the loop.
+Camera capture and display output are working. The current style stage uses a
+lookup-table filter; replacing it with a small convolutional network is ongoing work.
+Real-time neural style transfer has not yet been demonstrated in this project.
 
-## The pipeline as it stands
+## Current Implementation
 
-```
-OV5640 (DVP)  →  capture  →  cross-clock FIFO  →  frame buffer  →  display
-                                      │
-                                      └──  style filter  →──┘
-```
+The video path consists of camera capture, a clock-domain-crossing FIFO, frame
+storage, a style filter, and display output.
 
-The capture and display halves work end to end. Getting there meant working through
-the parts of video that are easy to underestimate: the RGB565 packing between the
-sensor, the framebuffer and the panel; the line-buffer addressing that wraps at a
-power of two rather than at the actual line width; and the fact that a camera
-configured over an I²C-like serial bus will happily report success while producing
-nothing.
+Bringing up the path required debugging RGB565 pixel packing, line-buffer addressing,
+and camera configuration over its serial control interface. In particular, buffer
+addresses had to follow the actual line width rather than wrap at a power of two.
 
-## The part being replaced
+The current filter uses three 256-entry tables for luminance and tone processing,
+together with a Laplacian-based edge term. It provides a lightweight baseline for
+testing the video path, but does not offer the learned transformations of a neural
+style-transfer model.
 
-The current style stage is a **lookup-table filter** — luminance, a tone curve, and a
-Laplacian-based edge term, all in three 256-entry tables. It is cheap and it works,
-and it also plateaus: a table can only remap the pixel in front of it, so the result
-is a filter rather than a rendering.
+## Convolutional Accelerator in Progress
 
-The work in progress replaces it with a **small convolutional network** implemented in
-the programmable logic. That opens the real architectural questions, which are the
-reason the project is worth doing:
+I am working on a small convolutional network in programmable logic. The Zynq-7020
+provides **220 DSP48 blocks** and about **5 Mb of BRAM**, so the network and its
+storage layout must fit a limited resource budget.
 
-- **Where the weights live.** 220 DSP48s and about 5 Mb of BRAM on a 7020 set a hard
-  ceiling on how large a network can be, and the first design decision is which layer
-  gets the budget.
-- **Whether to go back to DDR.** A 640×480 RGB565 frame is 4.9 Mb — a single frame does
-  not fit in the entire on-chip BRAM. Double buffering is 9.8 Mb. So the frame buffer
-  must move to DDR, and the interesting question becomes how to keep the feature maps
-  on chip so the bandwidth does not.
-- **Line-based rather than frame-based.** Feeding a whole frame through a layer at a
-  time means megabytes of traffic per layer. Streaming rows through the layers and
-  keeping only the rows a convolution needs is what makes the bandwidth work.
+The main design decisions are:
 
-## Why I want to do this one
+- **Compute and weight storage.** Choose a network size and layer mapping that fit
+  the available DSP and memory resources.
+- **Frame storage.** A 640×480 RGB565 frame contains 4,915,200 bits, and double
+  buffering requires 9,830,400 bits. A single frame would consume nearly all the
+  device's BRAM before accounting for weights, FIFOs, and line buffers. I therefore
+  plan to use DDR for frame storage.
+- **Intermediate data.** Use line buffers to retain the rows needed by a convolution
+  rather than storing every intermediate frame on chip. Whether a fully streamed
+  pipeline is practical depends on the selected network, channel counts, and
+  buffering requirements.
 
-The processor project taught me to make a design meet timing. The security sensor
-taught me to make one survive the environment it runs in. This one is about a
-different constraint entirely — a **fixed resource budget**, where 220 multipliers and
-5 Mb of memory are not negotiable, and the design is whatever fits inside them.
+## Focus of the Project
 
-That constraint is what makes accelerator architecture interesting to me: the answer
-is not "use more hardware", it is "decide what the hardware is for".
+This project is an opportunity to study accelerator design through a complete video
+system. The next step is to evaluate the network and buffering scheme, then measure
+resource use, DDR traffic, and frame rate after integration.

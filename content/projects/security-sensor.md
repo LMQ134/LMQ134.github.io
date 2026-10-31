@@ -1,119 +1,105 @@
 ---
-title: "An Intelligent Digital Security Sensor"
+title: "FPGA-Based Digital Security Sensor"
 date: 2026-08-15
 weight: 2
-description: "A CPU-independent hardware security subsystem that senses physical-layer attacks and responds before they take effect — 2026 FMSH Cup finalist entry, FPGA and digital track."
-summary: "2026 FMSH Cup finalist entry. A ring-oscillator and delay-line sensor array, a central arbiter with boot self-calibration, and a hardware response path that bypasses the CPU entirely: 1382 LUT, 2006 FF, 0.223 W, 200 MHz."
+description: "An FPGA security subsystem for monitoring clock glitches and environmental drift, with self-calibration and a hardware response path."
+summary: "2026 FMSH Cup finalist entry. Combines ring-oscillator, delay-line, and pulse-width sensors with self-calibration, a watchdog, and hardware NMI/key-erasure outputs. Reported implementation: 1,382 LUTs, 2,006 FFs, 0.223 W, and a 200 MHz clock."
 tags: ["Hardware Security", "FPGA", "Verilog", "CDC", "APB", "Timing"]
 ---
 
-**Core developer · June – August 2026 · Zynq-class FPGA, Verilog, Vivado 2024.2**
-**2026 FMSH Cup — National College Students Electronic Design Invitational Contest, Digital & FPGA track, national finalist**
+**Core developer · June – August 2026 · Zynq-class FPGA, Verilog, Vivado 2024.2**  
+**2026 FMSH Cup — National College Students Electronic Design Invitational Contest,
+Digital & FPGA track, national finalist**  
 **Advisor: Prof. Guipeng Liu · [Code](https://github.com/LMQ134/fuweibei)**
 
-A chip deployed in the field sits inside a threat model that software security cannot
-see. Clock glitches and supply or temperature excursions do not break the encryption —
-they push the silicon until a comparison takes the wrong branch. A CPU cannot detect
-any of this, because by the time software runs, the attack has already succeeded.
+Clock glitches and abnormal supply or temperature conditions can cause a circuit
+to operate incorrectly. Software checks may respond too late or may themselves
+be affected by the fault.
 
-This design is the **autonomous nervous system** underneath that software: a hardware
-loop of *sense → decide → respond → self-check*, in which **the response path neither
-traverses nor depends on the CPU or the bus**.
+This project monitors these conditions in hardware and generates a response without
+waiting for CPU software. The subsystem spans four clock domains and combines
+sensors, calibration and decision logic, an APB interface, and NMI/key-erasure outputs.
 
 ## Architecture
 
-```
-CPU  ──(APB: threshold configuration / live status)──┐
-                                                     ▼
-        ┌────────────────────────────────────────────────────┐
-        │            hardware security subsystem             │
-        │                                                    │
-        │  ①  APB configuration & control bridge             │
-        │      zero-wait CSR · thresholds, enables,          │
-        │      debounce period · read-only status            │
-        │                                                    │
-        │  ②  physical sensor array                          │
-        │      ring oscillator (temp/voltage)                │
-        │      delay line + high-rate sampling (clock glitch)│
-        │                                                    │
-        │  ③  central arbiter                                │
-        │      boot self-calibration · multi-window debounce │
-        │      watchdog self-check · composite-attack logic  │
-        │                                                    │
-        │  ④  hardware response                              │
-        │      primary: NMI (non-maskable interrupt)         │
-        │      fatal:   WIPE — hardware key erasure, latched │
-        └────────────────────────────────────────────────────┘
-```
-
-## Three problems worth naming
-
-**Sensing a slow drift and a fast glitch with the same budget.** These are opposite
-problems. A temperature or voltage attack moves over milliseconds and shows up as a
-*frequency* shift; a clock glitch lasts nanoseconds and shows up as a *timing*
-violation. They need different sensors, and both have to fit in one design.
-
-For the slow one, a **51-stage LUT ring oscillator** (a LUT2 NAND plus 50 LUT1
-inverters) is counted over a fixed 20 ms window — a quantisation error under 0.5 ppm
-against a ±0.5 % decision tolerance, so the measurement is not the limiting factor.
-For the fast one, a **16-stage LUT delay line** turns a nanosecond event into a
-*spatial* pattern of flip-flop states, sampled at 200 MHz: the glitch is identified by
-a tap transitions count of two or more, which distinguishes it from a normal clock
-edge. A second, independent probe counts the half-periods of the monitored 15 MHz
-clock at 5 ns resolution and alarms if the pulse width leaves its 15–45 ns window.
-The two paths are OR'd so their blind spots do not overlap.
-
-**Calibration, not thresholds.** A fixed threshold cannot survive part-to-part and
-board-to-board variation, and calibration is where the security actually lives. The
-sensor **builds its own baseline from the first samples after power-up**, then runs a
-coarse pass at three times the tolerance before a fine pass at one times — detecting
-*relative* drift rather than an absolute value. The baseline is then frozen, because
-the obvious attack on a self-calibrating sensor is the slow one: drift the environment
-gently enough that the sensor recalibrates to the attacker's conditions. That is the
-threat the freeze exists to stop.
-
-**The watcher has to be watched.** Any sensor whose output stops arriving for 100 ms is
-declared dead and triggers erasure. A security system whose failure mode is "the
-sensor quietly stopped working" is worse than no sensor at all, because it is trusted.
-
-## Response
-
-An anomaly must persist across three consecutive measurement windows (a saturation
-counter) before it is believed — environmental noise is continuous, and a sensor that
-cries wolf gets disabled by its own users.
-
-Response is graded. Thermal, voltage, or frequency excursion raises an **NMI**. A clock
-glitch, a watchdog timeout, or a composite judgement across both probes triggers
-**WIPE** — hardware erasure of the key material, taken *before* the attack can
-succeed rather than reported after it. Both flags are **latched so that only a reset
-clears them**: the evidence of an attack cannot be erased by the software running on a
-possibly-compromised CPU.
-
-A 1 ms blanking period after power-up masks PLL-lock transients, so the system cannot
-lock itself out on a false positive before it has started.
-
-## Verification
-
-Verified in two directions, which matters more here than in most designs — a security
-sensor fails by being quiet in either direction.
-
-| | |
+| Block | Function |
 |---|---|
-| Logic | **1382 LUT / 2006 FF** |
+| APB configuration interface | Sets thresholds, enables, and debounce parameters; provides status registers |
+| Sensor array | Uses a ring oscillator to monitor environmental drift and delay-line and pulse-width detectors to monitor clock glitches |
+| Decision logic | Performs startup calibration, debounce, watchdog checks, and combined sensor decisions |
+| Response logic | Raises an NMI or asserts WIPE for hardware key erasure; keeps the flags asserted until reset |
+
+The CPU configures the subsystem through APB and reads its status. Detection and
+response use a separate hardware path.
+
+## Monitoring Slow Drift and Short Glitches
+
+Temperature- and voltage-related changes can be observed through shifts in oscillator
+frequency. The design counts a **51-stage LUT ring oscillator** over a **20 ms
+window** and compares the count with a calibrated baseline. The oscillator consists
+of a LUT2 NAND and 50 LUT1 inverters. The reported count quantisation error is below
+0.5 ppm, compared with a ±0.5% decision tolerance; this does not represent the total
+sensor error.
+
+Short clock glitches require a different measurement. A **16-stage LUT delay line**
+produces a pattern of tap states sampled at **200 MHz**. The detector counts
+transitions in that pattern and treats two or more transitions as a glitch indication.
+
+A second detector measures the pulse width of the monitored **15 MHz clock** at
+**5 ns resolution** and raises an alarm outside a **15–45 ns window**. The two
+detector outputs are ORed so that either can report an anomaly. Their combined
+coverage depends on the pulse timing and the implementation.
+
+## Calibration and Self-Monitoring
+
+The subsystem establishes a baseline from samples collected after power-up, accounting
+for differences between devices and boards. It uses a coarse check at three times the
+tolerance, followed by a fine check at the configured tolerance.
+
+After calibration, the baseline is **frozen**. Continually updating it could allow a
+gradual environmental change to be absorbed into the reference. A frozen baseline
+avoids that adaptation, although legitimate long-term drift also needs to be considered.
+
+A **100 ms watchdog** checks that sensor outputs continue to arrive. A timeout
+triggers the erasure response rather than leaving a failed sensor undetected.
+
+## Response Logic
+
+A **1 ms startup blanking interval** masks PLL-lock transients. The design also uses
+a saturation counter to require an anomaly to persist for three consecutive measurement
+windows in its debounced decision path.
+
+Response severity depends on the alarm. Temperature-, voltage-, or frequency-related
+excursions raise an **NMI (non-maskable interrupt)**. A clock glitch, watchdog
+timeout, or combined sensor decision asserts **WIPE** to trigger hardware key erasure.
+
+Both flags remain asserted until reset. Software cannot clear them through the
+configuration interface. This removes software response latency, but establishing
+whether erasure completes before a particular attack succeeds requires measuring
+the full detection and response delay.
+
+## Implementation and Verification
+
+| Item | Reported result or method |
+|---|---|
+| Logic resources | **1,382 LUTs / 2,006 FFs** |
 | Power | **0.223 W** |
-| Maximum clock frequency | **200 MHz** |
-| Main testbench | functional, plus **false-positive and miss-rate counters** |
-| Corner cases | boot blanking, clock under-run, extreme glitches |
-| TDL verification | dedicated narrow-glitch testbench |
-| On-board | `fpga_attack_top` — a signal generator injects the monitored clock, glitches mixed in through an XOR network; a VIO console drives injection and displays state, yellow LED = NMI, red LED = WIPE |
+| Clock frequency | **200 MHz** |
+| Functional checks | Testbench with false-positive and miss counters |
+| Corner cases | Startup blanking, slow clock, and extreme glitches |
+| Delay-line detector | Dedicated narrow-glitch testbench |
+| Board testing | Signal-generator clock with XOR-injected glitches; VIO for control and status; LEDs for NMI and WIPE |
 
-The honest metric for this class of design is not "did it detect the attack" but
-**the false-positive rate at a given detection threshold** — a sensor that fires on
-noise will be switched off in the field, and then it detects nothing at all.
+The power figure is retained from the project report; this page does not identify it
+as a board measurement. Likewise, the presence of false-positive and miss counters
+does not by itself establish a measured detection rate across operating conditions.
 
-## What I took from it
+## What I Learned
 
-Before this, "timing" meant meeting a clock constraint. Here it became the subject:
-four clock domains, a 5 ns sampling window, and a design whose entire value depends on
-distinguishing a real event from a marginal one. Deciding *what counts as an attack*
-turned out to be a harder and more interesting problem than detecting it.
+This project extended my timing work beyond meeting a clock constraint. I had to
+consider how signals move between four clock domains, how short events are sampled,
+and how calibration and debounce affect detection.
+
+It also showed why sensor evaluation needs both missed-event and false-alarm tests.
+Increasing sensitivity can improve detection while making the system more likely to
+respond to normal variation.
